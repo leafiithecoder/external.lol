@@ -256,7 +256,7 @@ namespace SharpzReborn.Mods
         public static void CreateKickRoom()
         {
              Tools.Utilities.BroadcastRoom(RandomString(), true, PhotonNetworkController.Instance.keyToFollow, PhotonNetworkController.Instance.shuffler);
-             Room.Reconnect();
+             Room.JoinLastRoom();
         }
 
         private static float kickDelay;
@@ -359,22 +359,40 @@ namespace SharpzReborn.Mods
         }
 
         public static HalloweenGhostChaser _lucy;
+        public static float lucyFindTime;
         public static HalloweenGhostChaser Lucy
         {
             get
             {
-                _lucy ??= GetObject("Environment Objects/05Maze_PersistentObjects/2025_Halloween1_PersistentObjects/Halloween Ghosts/Lucy/Halloween Ghost/FloatingChaseSkeleton").GetComponent<HalloweenGhostChaser>();
+                if ((_lucy == null || _lucy.GetView.ViewID == 0 || (NetworkSystem.Instance.IsMasterClient && !_lucy.IsMine)) && Time.time > lucyFindTime)
+                {
+                    lucyFindTime = Time.time + 5f;
+
+                    GameObject lucyObject = GetObject("Environment Objects/05Maze_PersistentObjects/2025_Halloween1_PersistentObjects/Halloween Ghosts/Lucy/Halloween Ghost/FloatingChaseSkeleton");
+
+                    _lucy = lucyObject != null ? lucyObject.GetComponent<HalloweenGhostChaser>() : GetAllType<HalloweenGhostChaser>().Where(ghost => ghost != null && ghost.HasView && ghost.GetView.ViewID != 0).OrderByDescending(ghost => ghost.IsMine).ThenBy(ghost => ghost.gameObject.activeInHierarchy ? 0 : 1).FirstOrDefault();
+                }
+
                 return _lucy;
             }
             set => _lucy = value;
         }
 
         public static LurkerGhost _lurker;
+        public static float lurkerFindTime;
         public static LurkerGhost Lurker
         {
             get
             {
-                _lurker ??= GetObject("Environment Objects/05Maze_PersistentObjects/2025_Halloween1_PersistentObjects/Halloween Ghosts/Lurker Ghost/GhostLurker_Prefab").GetComponent<LurkerGhost>();
+                if ((_lurker == null || _lurker.GetView.ViewID == 0) && Time.time > lurkerFindTime)
+                {
+                    lurkerFindTime = Time.time + 5f;
+
+                    GameObject lurkerObject = GetObject("Environment Objects/05Maze_PersistentObjects/2025_Halloween1_PersistentObjects/Halloween Ghosts/Lurker Ghost/GhostLurker_Prefab");
+
+                    _lurker = lurkerObject != null ? lurkerObject.GetComponent<LurkerGhost>() : GetAllType<LurkerGhost>().FirstOrDefault(ghost => ghost != null && ghost.HasView && ghost.GetView.ViewID != 0);
+                }
+
                 return _lurker;
             }
             set => _lurker = value;
@@ -383,49 +401,56 @@ namespace SharpzReborn.Mods
         public static void SpawnBlueLucy()
         {
             HalloweenGhostChaser hgc = Lucy;
+            if (hgc == null) return;
             if (hgc.IsMine)
             {
                 hgc.timeGongStarted = Time.time;
                 hgc.currentState = HalloweenGhostChaser.ChaseState.Gong;
                 hgc.isSummoned = false;
             }
-            else NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+            else NotificationManager.SendNotification($"{fail} You are not the master client.");
         }
 
         public static void SpawnRedLucy()
         {
             HalloweenGhostChaser hgc = Lucy;
+            if (hgc == null) return;
             if (hgc.IsMine)
             {
                 hgc.timeGongStarted = Time.time;
                 hgc.currentState = HalloweenGhostChaser.ChaseState.Gong;
                 hgc.isSummoned = true;
             }
-            else NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+            else NotificationManager.SendNotification($"{fail} You are not the master client.");
         }
 
         public static void DespawnLucy()
         {
             HalloweenGhostChaser hgc = Lucy;
+            if (hgc == null) return;
             if (hgc.IsMine)
             {
                 hgc.currentState = HalloweenGhostChaser.ChaseState.Dormant;
                 hgc.isSummoned = false;
             }
-            else NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+            else NotificationManager.SendNotification($"{fail} You are not the master client.");
         }
 
         public static void LucyChase(NetPlayer player)
         {
             HalloweenGhostChaser hgc = Lucy;
+            if (hgc == null) return;
             if (hgc.IsMine)
             {
+                VRRig targetRig = RigUtilities.GetVRRigFromPlayer(player);
+                if (targetRig == null) return;
+
                 hgc.currentState = HalloweenGhostChaser.ChaseState.Chasing;
                 hgc.targetPlayer = player;
-                hgc.followTarget = GorillaTagger.Instance.offlineVRRig.transform;
+                hgc.followTarget = targetRig.transform;
             }
             else
-                NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+                NotificationManager.SendNotification($"{fail} You are not the master client.");
         }
 
         public static void LucyChaseGun()
@@ -447,6 +472,7 @@ namespace SharpzReborn.Mods
         public static void LucyAttack(NetPlayer player)
         {
             HalloweenGhostChaser hgc = Lucy;
+            if (hgc == null) return;
             if (hgc.IsMine)
             {
                 if (Time.time > hgc.grabTime + hgc.grabDuration + 0.1f)
@@ -462,7 +488,7 @@ namespace SharpzReborn.Mods
                 }
             }
             else
-                NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+                NotificationManager.SendNotification($"{fail} You are not the master client.");
         }
 
         public static void LucyAttackGun()
@@ -492,11 +518,29 @@ namespace SharpzReborn.Mods
             }
         }
 
+        public static void MoveLucyGun()
+        {
+            if (GetGunInput(false))
+            {
+                var GunData = RenderGun();
+                GameObject NewPointer = GunData.NewPointer;
+
+                if (GetGunInput(true))
+                {
+                    HalloweenGhostChaser hgc = Lucy;
+                    if (hgc == null) return;
+                    if (hgc.IsMine)
+                        hgc.transform.position = NewPointer.transform.position + Vector3.up;
+                    else NotificationManager.SendNotification($"{fail} You are not the master client.");
+                }
+            }
+        }
+
         public static void SpawnLurker()
         {
             if (Lurker.IsMine)
                 Lurker.currentState = LurkerGhost.ghostState.patrol;
-            else NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+            else NotificationManager.SendNotification($"{fail} You are not the master client.");
         }
 
         public static void MoveLurkerGun()
@@ -510,7 +554,7 @@ namespace SharpzReborn.Mods
                 {
                     if (Lurker.IsMine)
                         Lurker.transform.position = NewPointer.transform.position + Vector3.up;
-                    else NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+                    else NotificationManager.SendNotification($"{fail} You are not the master client.");
                 }
             }
         }
@@ -521,7 +565,7 @@ namespace SharpzReborn.Mods
             {
                 Lurker.currentState = LurkerGhost.ghostState.patrol;
             }
-            else NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+            else NotificationManager.SendNotification($"{fail} You are not the master client.");
         }
 
         public static void LurkerAttack(NetPlayer player)
@@ -537,7 +581,7 @@ namespace SharpzReborn.Mods
                 Lurker.currentState = LurkerGhost.ghostState.possess;
                 Lurker.targetPlayer = player;
             }
-            else NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client.");
+            else NotificationManager.SendNotification($"{fail} You are not the master client.");
         }
 
         public static void LurkerAttackGun()

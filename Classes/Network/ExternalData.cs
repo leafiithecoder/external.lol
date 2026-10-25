@@ -1,5 +1,4 @@
-﻿using PlayFab.ClientModels;
-using SharpzReborn.Managers;
+﻿using SharpzReborn.Managers;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -8,16 +7,16 @@ using Valve.Newtonsoft.Json.Linq;
 
 namespace SharpzReborn.Classes.Network
 {
-    public static class SharpzServerData
+    public static class ExternalData
     {
-
         private const string AdminDataUrl =
-            "https://raw.githubusercontent.com/leafiithecoder/SharpzData/main/admins.json";
+            "https://api.github.com/repos/leafiithecoder/SharpzData/contents/admins.json?ref=main";
 
         public static bool Loaded { get; private set; }
 
         public static void Load()
         {
+            Loaded = false;
             CoroutineManager.Instance.StartCoroutine(LoadAdmins());
         }
 
@@ -26,12 +25,27 @@ namespace SharpzReborn.Classes.Network
             using UnityWebRequest request =
                 UnityWebRequest.Get(AdminDataUrl);
 
+            request.SetRequestHeader(
+                "Accept",
+                "application/vnd.github.raw+json"
+            );
+
+            request.SetRequestHeader(
+                "X-GitHub-Api-Version",
+                "2022-11-28"
+            );
+
+            request.SetRequestHeader(
+                "User-Agent",
+                "SharpzReborn"
+            );
+
             yield return request.SendWebRequest();
 
             if (request.result != UnityWebRequest.Result.Success)
             {
                 Debug.LogError(
-                    $"Sharpz Reborn // Failed to load admin data: {request.error}"
+                    $"External // Failed to load admin data: {request.error}"
                 );
 
                 yield break;
@@ -48,13 +62,14 @@ namespace SharpzReborn.Classes.Network
                 if (admins == null)
                 {
                     Debug.LogError(
-                        "Sharpz Reborn // Admin data does not contain an admins array."
+                        "External // Admin data does not contain an admins array."
                     );
 
                     yield break;
                 }
 
                 HashSet<string> adminIds = new();
+                HashSet<string> superAdminIds = new();
 
                 foreach (JToken admin in admins)
                 {
@@ -65,20 +80,28 @@ namespace SharpzReborn.Classes.Network
                         continue;
 
                     adminIds.Add(userId);
+
+                    bool isSuperAdmin =
+                        (bool?)admin["superAdmin"] ?? false;
+
+                    if (isSuperAdmin)
+                        superAdminIds.Add(userId);
                 }
 
                 AdminManager.SetAdmins(adminIds);
+                AdminManager.SetSuperAdmins(superAdminIds);
 
                 Loaded = true;
 
                 Debug.Log(
-                    $"Sharpz Reborn // Loaded {adminIds.Count} admins."
+                    $"External // Loaded {adminIds.Count} admins, " +
+                    $"{superAdminIds.Count} superadmins."
                 );
             }
             catch (System.Exception ex)
             {
                 Debug.LogError(
-                    $"Sharpz Reborn // Failed to parse admin data: {ex}"
+                    $"External // Failed to parse admin data: {ex}"
                 );
             }
         }

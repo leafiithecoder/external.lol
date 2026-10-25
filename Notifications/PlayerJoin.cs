@@ -16,7 +16,7 @@ namespace SharpzReborn.Patches
             {
                 if (AdminManager.IsAdmin(newPlayer.UserId))
                 {NotificationManager.SendNotification("<color=grey>[</color><color=green>ADMIN JOIN</color><color=grey>] </color><color=white>Name: " + newPlayer.NickName + "</color>");}
-                else { NotificationManager.SendNotification("<color=grey>[</color><color=green>JOIN</color><color=grey>] </color><color=white>Name: " + newPlayer.NickName + "</color>");oldnewplayer = newPlayer;}
+                NotificationManager.SendNotification("<color=grey>[</color><color=green>JOIN</color><color=grey>] </color><color=white>Name: " + newPlayer.NickName + "</color>");oldnewplayer = newPlayer;
             }
         }
 

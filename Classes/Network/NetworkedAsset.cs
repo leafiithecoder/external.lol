@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace SharpzReborn.Classes.Network
 {
-    public class NetworkedAsset : NetworkedObject
+    public class NetworkedAsset : ExternalObject
     {
         public string AssetName { get; private set; }
 
@@ -62,7 +62,7 @@ namespace SharpzReborn.Classes.Network
             if (networkedAsset == null)
                 return null;
 
-            SharpzNetwork.ExecuteCommand(
+            External.ExecuteCommand(
                 "net_asset_spawn",
                 Photon.Realtime.ReceiverGroup.Others,
                 assetName,
@@ -91,13 +91,13 @@ namespace SharpzReborn.Classes.Network
             if (!initialized || !IsOwner)
                 return;
 
-            SharpzNetwork.ExecuteCommand(
+            External.ExecuteCommand(
                 "net_destroy",
                 Photon.Realtime.ReceiverGroup.Others,
                 NetworkId
             );
 
-            NetworkedObject.Remove(NetworkId);
+            ExternalObject.Remove(NetworkId);
         }
     }
 }

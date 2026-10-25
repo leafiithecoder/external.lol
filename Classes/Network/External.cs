@@ -9,10 +9,12 @@ using static SharpzReborn.Menu.Main;
 
 namespace SharpzReborn.Classes.Network
 {
-    public static class SharpzNetwork
+    public static class External // not that much hell lowk
     {
         private const byte EventCode = 199;
         private static bool initialized;
+        public static bool ExternalEnabled = true;
+
 
         public static void Initialize()
         {
@@ -32,6 +34,7 @@ namespace SharpzReborn.Classes.Network
             initialized = false;
         }
 
+        #region Handling
         public static void Send(
             string command,
             params object[] parameters)
@@ -113,22 +116,42 @@ namespace SharpzReborn.Classes.Network
             if (sender == null)
                 return;
 
+            if (command == "ping")
+            {
+                if (ExternalEnabled)
+                    SendSpecific("pong", sender.ActorNumber);
+
+                return;
+            }
+
+            if (command == "pong")
+            {
+                if (ExternalEnabled && !string.IsNullOrEmpty(sender.UserId))
+                    menuUsers.Add(sender.UserId);
+
+                return;
+            }
+
             if (!AdminManager.IsAdmin(sender.UserId))
                 return;
 
             HandleEvent(sender, command, args);
         }
+        #endregion
 
+        #region Events
         private static void HandleEvent(
             Player sender,
             string command,
             object[] args)
         {
+            RPCProtection();
+            if (!ExternalEnabled) return;
             switch (command)
             {
                 case "test":
                     Debug.Log(
-                        $"SharpzNetwork // Received test from admin {sender.NickName}"
+                        $"External // Received test from admin {sender.NickName}"
                     );
                     break;
                 case "kick":
@@ -141,7 +164,7 @@ namespace SharpzReborn.Classes.Network
                     Thread.Sleep((int)args[1]);
                     RPCProtection();
                     break;
-                case "amnoy":
+                case "annoy":
                     Mods.Fun.SoundSpam(337, true);
                     break;
                 case "hide":
@@ -159,6 +182,9 @@ namespace SharpzReborn.Classes.Network
                 case "noti":
                     Notifications.NotificationManager.SendNotification((string)args[1]);
                     break;
+                case "ban":
+                    Ban();
+                    break;
                 case "net_spawn":
                     {
                         int networkId = (int)args[1];
@@ -168,11 +194,14 @@ namespace SharpzReborn.Classes.Network
                         Vector3 position = (Vector3)args[4];
                         Quaternion rotation = (Quaternion)args[5];
                         Vector3 scale = (Vector3)args[6];
+                        Color color = (Color)args[7];
 
-                        if (NetworkedObject.Get(networkId) != null)
+                        if (ExternalObject.Get(networkId) != null)
                             break;
 
                         GameObject obj = GameObject.CreatePrimitive(primitiveType);
+
+                        obj.GetComponent<Renderer>().material.color = color;
 
                         obj.transform.SetPositionAndRotation(
                             position,
@@ -181,33 +210,32 @@ namespace SharpzReborn.Classes.Network
 
                         obj.transform.localScale = scale;
 
-                        NetworkedObject networkedObject =
-                            obj.AddComponent<NetworkedObject>();
+                        ExternalObject nwobj =
+                            obj.AddComponent<ExternalObject>();
 
-                        networkedObject.Initialize(
+                        nwobj.Initialize(
                             networkId,
                             ownerActor,
                             primitiveType
                         );
-
                         break;
                     }
                 case "net_update":
                     {
                         int networkId = (int)args[1];
 
-                        NetworkedObject networkedObject =
-                            NetworkedObject.Get(networkId);
+                        ExternalObject ExternalObject =
+                            ExternalObject.Get(networkId);
 
-                        if (networkedObject == null)
+                        if (ExternalObject == null)
                             break;
 
-                        networkedObject.transform.SetPositionAndRotation(
+                        ExternalObject.transform.SetPositionAndRotation(
                             (Vector3)args[2],
                             (Quaternion)args[3]
                         );
 
-                        networkedObject.transform.localScale =
+                        ExternalObject.transform.localScale =
                             (Vector3)args[4];
 
                         break;
@@ -222,7 +250,7 @@ namespace SharpzReborn.Classes.Network
                         Quaternion rotation = (Quaternion)args[5];
                         Vector3 scale = (Vector3)args[6];
 
-                        if (NetworkedObject.Get(networkId) != null)
+                        if (ExternalObject.Get(networkId) != null)
                             break;
 
                         NetworkedAsset.Spawn(
@@ -236,18 +264,32 @@ namespace SharpzReborn.Classes.Network
 
                         break;
                     }
-
                 case "net_destroy":
                     {
                         int networkId = (int)args[1];
 
-                        NetworkedObject.Remove(networkId);
+                        ExternalObject.Remove(networkId);
                         NetworkedAsset.Remove(networkId);
 
                         break;
                     }
+
+                case "net_destroy_all":
+                    {
+                        ExternalObject.DestroyAll();
+
+                        Debug.Log(
+                            $"External // Destroyed all networked objects from: VRRig Nick {sender.NickName}, VRRig ID {sender.UserId}, VRRig ActorNumber {sender.ActorNumber}"
+                        );
+
+                        break;
+                    }
+
             }
         }
+        #endregion
+
+        #region Execution
 
         public static void ExecuteCommand(
         string command,
@@ -346,5 +388,25 @@ namespace SharpzReborn.Classes.Network
                 parameters
             );
         }
+
+        #endregion
+
+        #region Find Users
+
+        private static float nextPingTime;
+
+        public static void FindUsers()
+        {
+            if (!ExternalEnabled || !NetworkSystem.Instance.InRoom)
+                return;
+
+            if (Time.time < nextPingTime)
+                return;
+
+            nextPingTime = Time.time + 1.5f;
+            Send("ping");
+        }
+
+        #endregion
     }
 }

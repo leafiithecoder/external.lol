@@ -11,6 +11,9 @@ namespace SharpzReborn.Notifications;
 [BepInPlugin("org.gorillatag.lars.notifications2", "NotificationLibrary", "1.0.5")]
 public class NotificationManager : BaseUnityPlugin
 {
+    public static int NotificationCount = 0;
+
+    public static bool NoNotifications = NotificationCount == 0;
 
     public static int NoticationThreshold = 30;
 
@@ -77,6 +80,30 @@ public class NotificationManager : BaseUnityPlugin
 
         if (notificationDecayTimeCounter <= notificationDecayTime)
             return;
+
+        notificationDecayTimeCounter = 0;
+
+        string[] lines = testtext.text
+            .Split(Environment.NewLine.ToCharArray())
+            .Where(text => !string.IsNullOrEmpty(text))
+            .ToArray();
+
+        if (lines.Length == 0)
+        {
+            testtext.text = "";
+            NotificationCount = 0;
+            return;
+        }
+
+        lines = lines.Skip(1).ToArray();
+
+        testtext.text = string.Join("\n", lines);
+
+        if (NotificationCount > 0)
+            NotificationCount--;
+
+        if (NotificationCount < 0)
+            NotificationCount = 0;
 
         notifilines                  = null;
         newtext                      = "";
@@ -147,6 +174,7 @@ public class NotificationManager : BaseUnityPlugin
             {
                 if (IsEnabled && PreviousNotification != notificationText)
                 {
+                    NotificationCount++;
                     if (!notificationText.Contains(Environment.NewLine))
                     {
                         notificationText += Environment.NewLine;
@@ -164,14 +192,30 @@ public class NotificationManager : BaseUnityPlugin
         }
     }
 
-    public static void ClearAllNotifications() =>
-            //NotificationManager.NotifiText.text = "<color=grey>[</color><color=green>SUCCESS</color><color=grey>]</color> <color=white>Notifications cleared.</color>" + Environment.NewLine;
-            notificationText.text = "";
+    public static void ClearAllNotifications()
+    {
+        //NotificationManager.NotifiText.text = "<color=grey>[</color><color=green>SUCCESS</color><color=grey>]</color> <color=white>Notifications cleared.</color>" + Environment.NewLine;
+        notificationText.text = "";
+        NotificationCount = 0;
+    }
 
     public static void ClearPastNotifications(int amount)
     {
-        string text = notificationText.text.Split(Environment.NewLine.ToCharArray()).Skip(amount).ToArray().Where(text2 => text2 != "").Aggregate("", (current, text2) => current + text2 + "\n");
+        string[] lines = notificationText.text
+            .Split(Environment.NewLine.ToCharArray())
+            .Where(text => !string.IsNullOrEmpty(text))
+            .ToArray();
 
-        notificationText.text = text;
+        int removed = Math.Min(amount, lines.Length);
+
+        notificationText.text = string.Join(
+            "\n",
+            lines.Skip(removed)
+        );
+
+        NotificationCount = Math.Max(
+            0,
+            NotificationCount - removed
+        );
     }
 }

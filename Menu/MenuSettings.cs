@@ -1,5 +1,6 @@
-﻿using System;
-using SharpzReborn.Classes;
+﻿using SharpzReborn.Classes;
+using System;
+using TMPro;
 using UnityEngine;
 
 namespace SharpzReborn.Menu;
@@ -36,7 +37,6 @@ public class Settings
      * To change the font, you may use the following code:
      *   Font.CreateDynamicFontFromOSFont("Comic Sans MS", 24)
      */
-
     [SavedSetting] public static bool dropMenu    = true;
     [SavedSetting] public static bool animateMenu = true;
 
@@ -443,7 +443,9 @@ public class Settings
     [SavedSetting] public static float menuCornerRadius = 0.06f;
     [SavedSetting] public static float outlineThickness = 0.018f;
 
+    //Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font; // offset in -Y
     public static Font currentFont = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
+    //public static TMP_FontAsset currentFont = Main.AgencyFB;
 
     [SavedSetting] public static bool fpsCounter       = true;
     [SavedSetting] public static bool disconnectButton = true;

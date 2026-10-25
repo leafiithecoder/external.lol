@@ -35,8 +35,11 @@ Sharpz Reborn includes mods for areas such as:
 
 ---
 ## Virus Detection
-Sharpz Reborn is **not a virus**.
+Sharpz Reborn is **not malware**.
 Anti-virus software may flag Sharpz Reborn as a false positive due to networking (Sharpz Network and Sharpz Data)
+Common flags:
+- Trojan:Win32/Wacatac.B!ml
+- Trojan:Win32/Kepavll!rfn
 
 ---
 

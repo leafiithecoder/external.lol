@@ -1,13 +1,14 @@
 ﻿using Photon.Pun;
 using SharpzReborn.Classes.Network;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace SharpzReborn.Classes
 {
-    public class NetworkedObject : MonoBehaviour
+    public class ExternalObject : MonoBehaviour
     {
-        private static readonly Dictionary<int, NetworkedObject> Objects = new();
+        private static readonly Dictionary<int, ExternalObject> Objects = new();
 
         private static int nextLocalId = 1;
 
@@ -22,11 +23,12 @@ namespace SharpzReborn.Classes
 
         protected bool initialized;
 
-        public static NetworkedObject Create(
+        public static ExternalObject Create(
             PrimitiveType primitiveType,
             Vector3 position,
             Quaternion rotation,
-            Vector3 scale)
+            Vector3 scale,
+            Color color)
         {
             int networkId = GetNextNetworkId();
 
@@ -36,19 +38,25 @@ namespace SharpzReborn.Classes
                 position,
                 rotation
             );
+            obj.transform.localScale = scale;
+            Renderer renderer = obj.GetComponent<Renderer>();
 
+            if (renderer != null)
+                renderer.material.color = color;
+
+            obj.transform.SetPositionAndRotation(position, rotation);
             obj.transform.localScale = scale;
 
-            NetworkedObject networkedObject =
-                obj.AddComponent<NetworkedObject>();
+            ExternalObject ExternalObject =
+                obj.AddComponent<ExternalObject>();
 
-            networkedObject.Initialize(
+            ExternalObject.Initialize(
                 networkId,
                 PhotonNetwork.LocalPlayer.ActorNumber,
                 primitiveType
             );
 
-            SharpzNetwork.ExecuteCommand(
+            External.ExecuteCommand(
                 "net_spawn",
                 Photon.Realtime.ReceiverGroup.Others,
                 networkId,
@@ -56,10 +64,11 @@ namespace SharpzReborn.Classes
                 (byte)primitiveType,
                 position,
                 rotation,
-                scale
+                scale,
+                color
             );
 
-            return networkedObject;
+            return ExternalObject;
         }
 
         public void Initialize(
@@ -92,7 +101,7 @@ namespace SharpzReborn.Classes
             if (!initialized || !IsOwner)
                 return;
 
-            SharpzNetwork.ExecuteCommand(
+            External.ExecuteCommand(
                 "net_update",
                 Photon.Realtime.ReceiverGroup.Others,
                 NetworkId,
@@ -107,7 +116,7 @@ namespace SharpzReborn.Classes
             if (!initialized || !IsOwner)
                 return;
 
-            SharpzNetwork.ExecuteCommand(
+            External.ExecuteCommand(
                 "net_destroy",
                 Photon.Realtime.ReceiverGroup.Others,
                 NetworkId
@@ -122,11 +131,11 @@ namespace SharpzReborn.Classes
                 Objects.Remove(NetworkId);
         }
 
-        public static NetworkedObject Get(int networkId)
+        public static ExternalObject Get(int networkId)
         {
             Objects.TryGetValue(
                 networkId,
-                out NetworkedObject obj
+                out ExternalObject obj
             );
 
             return obj;
@@ -136,7 +145,7 @@ namespace SharpzReborn.Classes
         {
             if (!Objects.TryGetValue(
                 networkId,
-                out NetworkedObject obj))
+                out ExternalObject obj))
                 return;
 
             Objects.Remove(networkId);
@@ -174,7 +183,7 @@ namespace SharpzReborn.Classes
 
         public static void SyncToPlayer(Photon.Realtime.Player player)
         {
-            foreach (NetworkedObject obj in Objects.Values)
+            foreach (ExternalObject obj in Objects.Values)
             {
                 if (obj == null || !obj.initialized)
                     continue;
@@ -182,7 +191,7 @@ namespace SharpzReborn.Classes
                 if (!obj.IsOwner)
                     continue;
 
-                SharpzNetwork.ExecuteCommand(
+                External.ExecuteCommand(
                     "net_spawn",
                     new Photon.Realtime.RaiseEventOptions
                     {
@@ -193,9 +202,31 @@ namespace SharpzReborn.Classes
                     (byte)obj.PrimitiveType,
                     obj.transform.position,
                     obj.transform.rotation,
-                    obj.transform.localScale
+                    obj.transform.localScale,
+                    obj.GetComponent<Renderer>().material.color
                 );
             }
+        }
+
+        public static void DestroyAll()
+        {
+            foreach (ExternalObject obj in Objects.Values.ToArray())
+            {
+                if (obj != null)
+                    Destroy(obj.gameObject);
+            }
+
+            Objects.Clear();
+        }
+
+        public static void DestroyAllNetworked()
+        {
+            External.ExecuteCommand(
+                "net_destroy_all",
+                Photon.Realtime.ReceiverGroup.Others
+            );
+
+            DestroyAll();
         }
     }
 }

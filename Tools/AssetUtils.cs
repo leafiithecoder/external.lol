@@ -9,6 +9,7 @@ namespace SharpzReborn.Tools;
 // You can do this by editing the .csproj or right-clicking on it, pressing properties and making the build action 'Embedded Resource'
 public static class StupidAssetUtils
 {
+    private static AssetBundle assetBundle;
     // Make sure this matches the name of the project/csproj file!
     private const string ProjectName = "SharpzReborn";
 
@@ -30,4 +31,12 @@ public static class StupidAssetUtils
     public static AssetBundle LoadAssetBundle(string bundleName) =>
             AssetBundle.LoadFromStream(Assembly.GetExecutingAssembly().GetManifestResourceStream(
                     $"{ProjectName}.Assets.{bundleName}"));
+    public static T LoadAsset<T>(string assetName) where T : Object
+    {
+        if (assetBundle == null)
+            LoadAssetBundle(assetBundle.name);
+
+        T gameObject = assetBundle.LoadAsset(assetName) as T;
+        return gameObject;
+    }
 }

@@ -68,20 +68,47 @@ namespace SharpzReborn.Mods
 
         public static GameObject gsphereR;
         public static GameObject gsphereL;
+
         public static void GhostView()
         {
-            if (ghostMonke || invisMonke)
+            if (!ghostMonke && !invisMonke)
+            {
+                if (gsphereL != null)
+                {
+                    UnityEngine.Object.Destroy(gsphereL);
+                    gsphereL = null;
+                }
+
+                if (gsphereR != null)
+                {
+                    UnityEngine.Object.Destroy(gsphereR);
+                    gsphereR = null;
+                }
+
+                return;
+            }
+
+            if (gsphereL == null)
             {
                 gsphereL = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                gsphereL.transform.position = GorillaTagger.Instance.leftHandTransform.position;
-                gsphereL.transform.localScale = new Vector3(0.111f, 0.111f, 0.111f);
-                gsphereL.GetComponent<Renderer>().material.color = Color.violet;
-
-                gsphereR = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                gsphereR.transform.position = GorillaTagger.Instance.rightHandTransform.position;
-                gsphereR.transform.localScale = new Vector3(0.111f, 0.111f, 0.111f);
-                gsphereR.GetComponent<Renderer>().material.color = Color.violet;
+                gsphereL.transform.localScale = Vector3.one * 0.111f;
+                gsphereL.GetComponent<Renderer>().material.color = Color.rebeccaPurple;
+                gsphereL.GetComponent<Collider>().enabled = false;
             }
+
+            if (gsphereR == null)
+            {
+                gsphereR = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                gsphereR.transform.localScale = Vector3.one * 0.111f;
+                gsphereR.GetComponent<Renderer>().material.color = Color.rebeccaPurple;
+                gsphereR.GetComponent<Collider>().enabled = false;
+            }
+
+            gsphereL.transform.position =
+                TrueLeftHand().position;
+
+            gsphereR.transform.position =
+                TrueRightHand().position;
         }
 
         private static readonly float headSpinSpeed = 10f;

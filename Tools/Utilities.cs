@@ -1,9 +1,12 @@
 ﻿using GorillaGameModes;
 using GorillaNetworking;
+using Photon.Pun;
+using Photon.Realtime;
 using SharpzReborn.Classes;
 using SharpzReborn.Classes.Network;
 using SharpzReborn.Managers;
 using SharpzReborn.Menu;
+using TMPro;
 using UnityEngine;
 
 namespace SharpzReborn.Tools
@@ -43,54 +46,6 @@ namespace SharpzReborn.Tools
             }
         }
 
-        public static string GetCurrentGamemodeColor()
-        {
-            switch (GorillaGameManager.instance.GameType())
-            {
-                case GorillaGameModes.GameModeType.Guardian:
-                    return "<color=yellow>Guardian</color>";
-
-                case GorillaGameModes.GameModeType.Paintbrawl:
-                    return "<color=orange>Paintbrawl</color>";
-
-                case GorillaGameModes.GameModeType.Ambush:
-                    return "<color=silver>Ambush</color>";
-
-                case GorillaGameModes.GameModeType.Infection:
-                    return "<color=red>Infection</color>";
-
-                case GorillaGameModes.GameModeType.Casual:
-                    return "<color=white>Casual</color>";
-
-                case GorillaGameModes.GameModeType.HuntDown:
-                    return "<color=cyan>Hunt</color>";
-
-                case GorillaGameModes.GameModeType.FreezeTag:
-                    return "<color=cyan>Freeze Tag</color>";
-
-                case GorillaGameModes.GameModeType.Ghost:
-                    return "<color=#add8e6ff>Ghost Tag</color>";
-
-                case GorillaGameModes.GameModeType.PropHunt:
-                    return "<color=green>Prop Hunt</color>";
-
-                case GorillaGameModes.GameModeType.InfectionCompetitive:
-                    return "<color=#800000ff>Competitive</color>";
-
-                case GorillaGameModes.GameModeType.SuperInfect:
-                    return "<color=magenta>Super Infection</color>";
-
-                case GorillaGameModes.GameModeType.SuperCasual:
-                    return "<color=teal>Super Casual</color>";
-
-                case GorillaGameModes.GameModeType.None:
-                    return "<color=red>ERROR</color>";
-
-                default:
-                    return GorillaGameManager.instance.GameType().ToString();
-            }
-        }
-
         public static void BroadcastRoom(string roomName, bool create, string key, string shuffler)
         {
             string text = NetworkSystem.ShuffleRoomName(roomName, shuffler.Substring(2, 8), true) + "|" + NetworkSystem.ShuffleRoomName("ABCDEFGHIJKLMNPQRSTUVWXYZ123456789".Substring(NetworkSystem.Instance.currentRegionIndex, 1), shuffler[..2], true);
@@ -113,18 +68,43 @@ namespace SharpzReborn.Tools
         public static void Init()
         {
             CoroutineManager.Instance.StartCoroutine(AdminManager.WaitForAdminPanel());
-            SharpzServerData.Load();
-            SharpzNetwork.Initialize();
+            ExternalData.Load();
+            External.Initialize();
             AdminManager.LoadWatermark();
             Boards.SetLaunchBoards();
             Debug.Log($"SharpzReborn // Initialized {Buttons.ButtonCount} buttons.");
+
+            Debug.Log(AdminManager.banner);
 
         }
 
         public static void Shutdown()
         {
-            SharpzNetwork.Shutdown();
+            External.Shutdown();
             Preferences.Save();
+        }
+
+        public static void OnJoin()
+        {
+            Mods.Room.lastRoom = PhotonNetwork.CurrentRoom.Name;
+            RoomHistory.Add(PhotonNetwork.CurrentRoom.Name + $" [<color=green>{Tools.Utilities.GetCurrentGamemode()}</color>]");
+        }
+
+        public static void OnLeave()
+        {
+            Debug.Log("cleaning up");
+            Mods.Visuals.ClearLinePool(true);
+            ExternalObject.DestroyAll();
+        }
+
+        public static void OnOtherPlayerJoin(Player other)
+        {
+            ExternalObject.SyncToPlayer(other);
+        }
+
+        public static void OnOtherPlayerLeave(Player other) 
+        { 
+
         }
     }
 }

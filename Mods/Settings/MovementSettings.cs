@@ -57,7 +57,7 @@ public class Movement
     {
         flySpeedIndex = Mathf.Clamp(flySpeedIndex, 0, flySpeedValues.Length - 1);
         flySpeed = flySpeedValues[flySpeedIndex];
-        GetIndex("Change Fly Speed").overlapText = $"Change Fly Speed [{flySpeedNames[flySpeedIndex]}]";
+        GetIndex("Change Fly Speed").overlapText = $"Change Fly Speed <color=grey>[</color><color=green>{flySpeedNames[flySpeedIndex]}</color><color=grey>]</color>";
     }
 
     public static int speedAmountIndex = 1;
@@ -76,7 +76,7 @@ public class Movement
     public static readonly float[] speedValues =
     [
         6.5f,
-        7.5f,
+        7.7f,
         8.5f,
         9f,
         20f
@@ -84,11 +84,11 @@ public class Movement
 
     public static readonly float[] speedMultis =
     [
-        1.6f,
-        1.1f,
-        1.6f,
-        2f,
-        1f
+        4.1f,
+        5f,
+        5.5f,
+        6.5f,
+        10f
     ];
 
     public static string SpeedAmountName => speedNames[speedAmountIndex];
@@ -116,7 +116,7 @@ public class Movement
         speedAmountIndex = Mathf.Clamp(speedAmountIndex, 0, speedValues.Length - 1);
         speedAmount = speedValues[speedAmountIndex];
         speedMultiplier = speedMultis[speedAmountIndex];
-        GetIndex("Change Speed Boost Amount").overlapText = $"Change Speed Boost Amount [{speedNames[speedAmountIndex]}]";
+        GetIndex("Change Speed Boost Amount").overlapText = $"Change Speed Boost Amount <color=grey>[</color><color=green>{speedNames[speedAmountIndex]}</color><color=grey>]</color>";
     }
     public static readonly float[] armLengthAmounts =
     [
@@ -166,5 +166,70 @@ public class Movement
         armLengthIndex = Mathf.Clamp(armLengthIndex, 0, armLengthAmounts.Length - 1);
         armLength = armLengthAmounts[armLengthIndex];
         GetIndex("Change Arm Length").overlapText = $"Change Arm Length [{armLengthNames[armLengthIndex]}]";
+    }
+
+    public static readonly PrimitiveType[] platformShapes =
+[
+    PrimitiveType.Cube,
+    PrimitiveType.Sphere
+    ];
+
+    public static readonly string[] platformShapeNames =
+    [
+        "Cube",
+        "Sphere"
+    ];
+
+    public static readonly Vector3[] platformShapeScales =
+    [
+        new Vector3(0.025f, 0.3f, 0.4f),
+        new Vector3(0.444f, 0.444f, 0.444f)
+    ];
+
+    [SavedSetting(OnLoaded = nameof(ApplySavedPlatformShape))]
+    public static int platformShapeIndex = 0;
+
+    public static PrimitiveType platformShape = PrimitiveType.Cube;
+
+    public static Vector3 PlatformShapeScale =>
+        platformShapeScales[platformShapeIndex];
+
+    public static string PlatformShapeName =>
+        platformShapeNames[platformShapeIndex];
+
+    public static void ChangePlatformShape(bool increment)
+    {
+        platformShapeIndex += increment ? 1 : -1;
+
+        if (platformShapeIndex >= platformShapeNames.Length)
+            platformShapeIndex = 0;
+        else if (platformShapeIndex < 0)
+            platformShapeIndex = platformShapeNames.Length - 1;
+
+        ApplySavedPlatformShape();
+    }
+
+    public static void SetPlatformShapeIndex(int index)
+    {
+        platformShapeIndex =
+            Mathf.Clamp(index, 0, platformShapes.Length - 1);
+
+        ApplySavedPlatformShape();
+    }
+
+    private static void ApplySavedPlatformShape()
+    {
+        platformShapeIndex =
+            Mathf.Clamp(
+                platformShapeIndex,
+                0,
+                platformShapes.Length - 1
+            );
+
+        platformShape =
+            platformShapes[platformShapeIndex];
+
+        GetIndex("Change Platform Shape").overlapText =
+            $"Change Platform Shape [{platformShapeNames[platformShapeIndex]}]";
     }
 }

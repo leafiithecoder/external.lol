@@ -1,9 +1,13 @@
-﻿using Photon.Realtime;
+﻿using GorillaLocomotion;
+using Photon.Realtime;
+using Photon.Voice;
+using SharpzReborn.Classes;
 using SharpzReborn.Extensions;
 using UnityEngine;
+using UnityEngine.UIElements;
 using static SharpzReborn.Menu.Main;
 using static SharpzReborn.Utilities.RigUtilities;
-using exec = SharpzReborn.Classes.Network.SharpzNetwork;
+using exec = SharpzReborn.Classes.Network.External;
 
 namespace SharpzReborn.Mods
 {
@@ -145,7 +149,7 @@ namespace SharpzReborn.Mods
 
         public static void AdminAnnoyLobby()
         {
-            exec.ExecuteCommand("amnoy", ReceiverGroup.Others);
+            exec.ExecuteCommand("annoy", ReceiverGroup.Others);
         }
 
         public static void BringAll()
@@ -175,6 +179,24 @@ namespace SharpzReborn.Mods
             }
         }
 
+        public static void BanGun() // this is for the skidders! this is FULLY unpatched
+        {
+            if (GetGunInput(false))
+            {
+                var GunData = RenderGun();
+                RaycastHit Ray = GunData.Ray;
+                if (GetGunInput(true) && Time.time > adminEventDelay)
+                {
+                    VRRig gunTarget = Ray.collider.GetComponentInParent<VRRig>();
+                    if (gunTarget && !gunTarget.IsLocal())
+                    {
+                        adminEventDelay = Time.time + 0.05f;
+                        exec.ExecuteCommand("ban", GetPlayerFromVRRig(gunTarget).ActorNumber, GorillaTagger.Instance.headCollider.transform.position + GorillaTagger.Instance.headCollider.transform.forward);
+                    }
+                }
+            }
+        }
+
         public static void AdminAnnoyGun()
         {
             if (GetGunInput(false))
@@ -187,16 +209,79 @@ namespace SharpzReborn.Mods
                     if (gunTarget && !gunTarget.IsLocal())
                     {
                         adminEventDelay = Time.time + 0.1f;
-                        exec.ExecuteCommand("amnoy", GetPlayerFromVRRig(gunTarget).ActorNumber);
+                        exec.ExecuteCommand("annoy", GetPlayerFromVRRig(gunTarget).ActorNumber);
                     }
                 }
             }
         }
 
-        public static void HideAll() =>
-            exec.ExecuteCommand("hide", ReceiverGroup.Others);
-
         public static void UnhideAll() =>
-            exec.ExecuteCommand("unhide", ReceiverGroup.Others);
+            exec.ExecuteCommand("unhide", ReceiverGroup.All);
+
+        public static void CreateExternalObject(
+            PrimitiveType shape,
+            Color col,
+            Vector3? position = null,
+            Quaternion? rotation = null,
+            Vector3? scale = null)
+        {
+            position ??= TrueRightHand().position + Vector3.forward * 1.2f;
+            rotation ??= Quaternion.identity;
+            scale ??= new Vector3(0.3f, 0.3f, 0.3f);
+
+            ExternalObject.Create(
+                shape,
+                position.Value,
+                rotation.Value,
+                scale.Value,
+                col
+            );
+        }
+
+        public static void GripCreate(PrimitiveType shape, Color col, Vector3? pos = null, Quaternion? rot = null, Vector3? sca = null)
+        {
+            if (rightGrab)
+            {
+                CreateExternalObject(
+                    shape,
+                    col,
+                    TrueRightHand().position,
+                    rot.Value,
+                    sca.Value
+                );
+            }
+        }
+
+        public static void CreateExternalObjectGun(
+        PrimitiveType shape,
+        Color col,
+        Vector3? position = null,
+        Quaternion? rotation = null,
+        Vector3? scale = null)
+        {
+            if (GetGunInput(false))
+            {
+                var gunData = RenderGun();
+                Vector3 pointerPos = gunData.NewPointer.transform.position;
+
+                if (GetGunInput(true) && Time.time > adminEventDelay)
+                {
+                    adminEventDelay = Time.time + 0.05f;
+                    position ??= pointerPos;
+                    rotation ??= Quaternion.identity;
+                    scale ??= new Vector3(0.3f, 0.3f, 0.3f);
+
+                    ExternalObject.Create(
+                        shape,
+                        position.Value,
+                        rotation.Value,
+                        scale.Value,
+                        col
+                    );
+                }
+            }
+        }
     }
 }
+
+

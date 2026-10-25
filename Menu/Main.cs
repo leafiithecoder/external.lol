@@ -24,6 +24,7 @@ using static SharpzReborn.Menu.Settings;
 using Button = SharpzReborn.Classes.Button;
 using Random = UnityEngine.Random;
 using static SharpzReborn.Tools.Utilities;
+using SharpzReborn.Classes.Network;
 
 namespace SharpzReborn.Menu;
 
@@ -91,6 +92,7 @@ public class Main : MonoBehaviour
     public static string warning = "<color=grey>[</color><color=red>WARNING</color><color=grey>]</color>";
     public static string info = "<color=grey>[</color><color=purple>INFO</color><color=grey>]</color>";
     private static string searchQuery = string.Empty;
+    public static HashSet<string> menuUsers = new(); // only for people in the room
 
     // moved admin data to json
 
@@ -129,6 +131,8 @@ public class Main : MonoBehaviour
     private static LineRenderer GunLine;
     private static ButtonCategory currentCategory;
     private static ButtonInfo[] searchResults = Array.Empty<ButtonInfo>();
+    public static Transform lHand = GorillaTagger.Instance.leftHandTransform;
+    public static Transform rHand = GorillaTagger.Instance.rightHandTransform;
 
     // Important
 
@@ -139,13 +143,13 @@ public class Main : MonoBehaviour
     private static GameObject searchRoot;
     private static GameObject leftReference;
     private static GameObject rightReference;
-    private static GameObject GunPointer;
+    public static GameObject GunPointer;
     private static GameObject   searchKeyboard;
 
     private static readonly ButtonInfo previousPageButton = new()
     {
             buttonText  = "PreviousPage",
-            displayText = () => "< Previous Page",
+            displayText = () => "<",
             method      = PreviousPage,
             mode        = ButtonMode.Action,
             toolTip     = "Moves to the previous page.",
@@ -154,7 +158,7 @@ public class Main : MonoBehaviour
     private static readonly ButtonInfo nextPageButton = new()
     {
             buttonText  = "NextPage",
-            displayText = () => "Next Page >",
+            displayText = () => ">",
             method      = NextPage,
             mode        = ButtonMode.Action,
             toolTip     = "Moves to the next page.",
@@ -181,7 +185,6 @@ public class Main : MonoBehaviour
         method = () =>
         {
             SetCategory("Main");
-            RecreateMenu();
         },
         mode = ButtonMode.Action,
         toolTip = "Returns to the main menu."
@@ -226,6 +229,7 @@ public class Main : MonoBehaviour
 
             AdminManager.FindAdmins();
             AdminManager.CheckAdminPanel();
+            External.FindUsers();
 
             leftPrimary = ControllerInputPoller.instance.leftControllerPrimaryButton;
             leftSecondary = ControllerInputPoller.instance.leftControllerSecondaryButton;
@@ -1610,6 +1614,12 @@ public class Main : MonoBehaviour
         if (menu == null)
             return;
 
+        if (currentCategory != null &&
+            currentCategory.name == "Enabled Mods")
+        {
+            UpdateEnabledMods();
+        }
+
         Transform previousParent =
                 menu.transform.parent;
 
@@ -2488,9 +2498,40 @@ public class Main : MonoBehaviour
             return;
         }
 
+        bool localIsAdmin =
+            PhotonNetwork.LocalPlayer != null &&
+            AdminManager.IsLocalAdmin(
+                PhotonNetwork.LocalPlayer.UserId);
+
         ButtonInfo[] allButtons = AllButtons;
 
-        searchResults = (from button in allButtons let displayText = button.GetDisplayText() let nameMatch = displayText.IndexOf(searchQuery, StringComparison.OrdinalIgnoreCase) >= 0 let toolTipMatch = !string.IsNullOrEmpty(button.toolTip) && button.toolTip.IndexOf(searchQuery, StringComparison.OrdinalIgnoreCase) >= 0 where nameMatch || toolTipMatch select button).ToArray();
+        searchResults = (
+            from button in allButtons
+
+            let isAdminButton =
+                Array.IndexOf(AdminMods, button) >= 0
+
+            where
+                !isAdminButton ||
+                localIsAdmin
+
+            let displayText = button.GetDisplayText()
+
+            let nameMatch =
+                displayText.IndexOf(
+                    searchQuery,
+                    StringComparison.OrdinalIgnoreCase) >= 0
+
+            let toolTipMatch =
+                !string.IsNullOrEmpty(button.toolTip) &&
+                button.toolTip.IndexOf(
+                    searchQuery,
+                    StringComparison.OrdinalIgnoreCase) >= 0
+
+            where nameMatch || toolTipMatch
+
+            select button
+        ).ToArray();
     }
 
     public static void HandleSearchKey(string value)
@@ -2587,32 +2628,38 @@ public class Main : MonoBehaviour
 
     public static void FixStickyColliders(GameObject platform)
     {
-        Vector3[] localPositions = {
-                new Vector3(0, 1f, 0),
-                new Vector3(0, -1f, 0),
-                new Vector3(1f, 0, 0),
-                new Vector3(-1f, 0, 0),
-                new Vector3(0, 0, 1f),
-                new Vector3(0, 0, -1f)
-            };
-        Quaternion[] localRotations = {
-                Quaternion.Euler(90, 0, 0),
-                Quaternion.Euler(-90, 0, 0),
-                Quaternion.Euler(0, -90, 0),
-                Quaternion.Euler(0, 90, 0),
-                Quaternion.identity,
-                Quaternion.Euler(0, 180, 0)
-            };
+        Vector3 size = platform.transform.localScale;
+
+        Vector3[] localPositions =
+        {
+            new Vector3(0f, size.y / 2f, 0f),
+            new Vector3(0f, -size.y / 2f, 0f),
+            new Vector3(size.x / 2f, 0f, 0f),
+            new Vector3(-size.x / 2f, 0f, 0f),
+            new Vector3(0f, 0f, size.z / 2f),
+            new Vector3(0f, 0f, -size.z / 2f)
+        };
+
         for (int i = 0; i < localPositions.Length; i++)
         {
             GameObject side = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            float size = 0.025f * 1f;
-            side.transform.SetParent(platform.transform);
-            side.transform.position = localPositions[i] * (size / 2);
-            side.transform.rotation = localRotations[i];
-            WorldScale(side, new Vector3(size, size, 0.01f * 1f));
-            side.GetComponent<Renderer>().enabled = false;
+
+            side.name = $"stickeh_{i}";
+            side.transform.SetParent(platform.transform, false);
+            side.transform.localPosition = localPositions[i];
+            side.transform.localRotation = Quaternion.identity;
+
+            side.transform.localScale = new Vector3(
+                i < 2 ? size.x : 0.025f,
+                i < 2 ? 0.025f : size.y,
+                size.z
+            );
+
+            Renderer renderer = side.GetComponent<Renderer>();
+            if (renderer != null)
+                renderer.enabled = false;
         }
+
     }
 
     public static (RaycastHit Ray, GameObject NewPointer) RenderGun(
@@ -3161,7 +3208,7 @@ public class Main : MonoBehaviour
 
         buttons.Add(new ButtonInfo
         {
-            buttonText = "Admin",
+            buttonText = "Admin Mods",
             method = () => SetCategory("Admin"),
             mode = ButtonMode.Action,
             isCategory = true,
@@ -3172,5 +3219,77 @@ public class Main : MonoBehaviour
 
         adminPanelAdded = true;
         isAdmin = true;
+    }
+
+    public static void UpdateEnabledMods()
+    {
+        ButtonCategory enabledCategory =
+            Categories.First(category => category.name == "Enabled Mods");
+
+        List<ButtonInfo> enabledButtons = new()
+    {
+        new ButtonInfo
+        {
+            buttonText = "Exit Enabled Mods",
+            method = () => SetCategory("Main"),
+            mode = ButtonMode.Action,
+            isCategory = true,
+            toolTip = "Returns to the main menu page."
+        }
+    };
+
+        foreach (ButtonCategory category in Categories)
+        {
+            if (category.name == "Main" ||
+                category.name == "Enabled Mods")
+                continue;
+
+            foreach (ButtonInfo button in category.buttons)
+            {
+                if (button == null ||
+                    button.isCategory ||
+                    button.mode != ButtonMode.Toggle ||
+                    !button.enabled)
+                    continue;
+
+                enabledButtons.Add(button);
+            }
+        }
+
+        enabledCategory.buttons = enabledButtons.ToArray();
+    }
+
+    public static readonly Dictionary<Type, object[]> typePool = new Dictionary<Type, object[]>();
+    private static readonly Dictionary<Type, float> receiveTypeDelay = new Dictionary<Type, float>();
+
+    public static T[] GetAllType<T>(float decayTime = 5f) where T : UnityEngine.Object
+    {
+        Type type = typeof(T);
+
+        float lastReceivedTime = receiveTypeDelay.GetValueOrDefault(type, -1f);
+
+        if (Time.time > lastReceivedTime)
+        {
+            typePool.Remove(type);
+            receiveTypeDelay[type] = Time.time + decayTime;
+        }
+
+        if (!typePool.ContainsKey(type))
+            typePool.Add(type, FindObjectsByType<T>(FindObjectsInactive.Include, FindObjectsSortMode.None));
+
+        return (T[])typePool[type];
+    }
+
+    public static void Ban() // you feel the skidding within you
+    {
+        for (int i = 0; i > 2; i++)
+        {
+            GorillaServer.Instance.CheckForBadName(new CheckForBadNameRequest
+            {
+                name = GorillaComputer.instance.anywhereTwoWeek[Random.Range(0, GorillaComputer.instance.anywhereTwoWeek.Length)],
+                forRoom = true,
+                forTroop = false
+            }, null, null);
+        }
     }
 }

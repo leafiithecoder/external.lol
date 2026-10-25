@@ -10,6 +10,9 @@ using System.Linq;
 using UnityEngine;
 using static SharpzReborn.Classes.RigManager;
 using static SharpzReborn.Menu.Main;
+using static SharpzReborn.Extensions.VRRigExtensions;
+using Photon.Realtime;
+
 namespace SharpzReborn.Mods
 {
     public class Safety
@@ -38,6 +41,7 @@ namespace SharpzReborn.Mods
                     onReport?.Invoke(vrrig, report.transform.position);
             }
         }
+
         public static void AntiReportDisconnect() =>
                 AntiReport((vrrig, position) =>
                            {
@@ -94,18 +98,25 @@ namespace SharpzReborn.Mods
         {
             try
             {
-                if (data.Code == 200)
+                if (data.Code == PunEvent.RPC)
                 {
+                    var sender = PhotonNetwork.NetworkingClient.CurrentRoom.GetPlayer(data.Sender);
+                    if (sender.IsLocal)
+                        return;
+
                     string rpcName = PhotonNetwork.PhotonServerSettings.RpcList[int.Parse(((Hashtable)data.CustomData)[5].ToString())];
                     object[] args = (object[])((Hashtable)data.CustomData)[4];
                     if (rpcName == "RPC_PlayHandTap" && (int)args[0] == 67)
                     {
-                        VRRig target = GetVRRigFromPlayer(PhotonNetwork.NetworkingClient.CurrentRoom.GetPlayer(data.Sender));
+                        VRRig target = GetVRRigFromPlayer(sender);
+                        if (Vector3.Distance(target.leftHandTransform.position, target.rightHandTransform.position) < 0.1f)
+                            AntiReportFRT(PhotonNetwork.NetworkingClient.CurrentRoom.GetPlayer(data.Sender));
                     }
                 }
             }
             catch { }
         }
+
         public static void EnableAntiOculusReport() =>
             PhotonNetwork.NetworkingClient.EventReceived += EventReceived_AntiOculusReport;
 
@@ -141,6 +152,30 @@ namespace SharpzReborn.Mods
                 NotificationManager.SendNotification($"{ModInfoNotif("ANTI-REPORT")} " + GetPlayerFromVRRig(vrrig).NickName + " attempted to report you, they have been kicked.");
                 reportRig = null;
             });
+        }
+
+        public static void AntiReportNotify()
+        {
+            AntiReport((vrrig, position) =>
+            {
+                if (AdminManager.admins.Contains(vrrig.GetPlayer().UserId))
+                {
+                    return;
+                }
+
+                if (!(Time.time > antiReportDelay)) return;
+                antiReportDelay = Time.time + 1f;
+                NotificationManager.SendNotification($"{ModInfoNotif("ANTI-REPORT")} " + GetPlayerFromVRRig(vrrig).NickName + " is attempting to report you.");
+                reportRig = null;
+            });
+        }
+
+        public static void AntiReportFRT(Photon.Realtime.Player subject)
+        {
+            if (subject.IsLocal)
+                return;
+
+            reportRig = subject.VRRig();
         }
     }
 }

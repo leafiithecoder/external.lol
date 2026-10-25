@@ -4,7 +4,7 @@ namespace SharpzReborn.Classes
 {
     public sealed class ButtonCategory
     {
-        public string       name    = "Unnamed";
+        public string       name    = "ERROR";
         public ButtonInfo[] buttons = [];
     }
 }

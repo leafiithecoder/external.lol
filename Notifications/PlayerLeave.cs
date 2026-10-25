@@ -18,11 +18,8 @@ namespace SharpzReborn.Patches
                 {
                     NotificationManager.SendNotification("<color=grey>[</color><color=red>ADMIN LEAVE</color><color=grey>] </color><color=white>Name: " + otherPlayer.NickName + "</color>");
                 }
-                else
-                {
                     NotificationManager.SendNotification("<color=grey>[</color><color=red>LEAVE</color><color=grey>]</color> <color=white>Name: " + otherPlayer.NickName + "</color>");
                     a = otherPlayer;
-                }
             }
         }
 

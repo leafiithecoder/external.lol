@@ -1,8 +1,11 @@
-﻿using GorillaLocomotion;
+﻿using ExitGames.Client.Photon;
+using GorillaLocomotion;
+using Photon.Pun;
 using Photon.Realtime;
 using SharpzReborn.Classes;
 using SharpzReborn.Classes.Network;
 using SharpzReborn.Menu;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.XR;
@@ -91,19 +94,33 @@ public abstract class Movement
         {
             if (platl == null)
             {
-                platl = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                platl.transform.localScale = new Vector3(0.025f, 0.3f, 0.4f);
-                platl.transform.position = TrueLeftHand().position + TrueLeftHand().right * 0.05f;
-                platl.transform.rotation = TrueLeftHand().rotation;
-                FixStickyColliders(platl);
-                ColorChanger colorChanger = platl.AddComponent<ColorChanger>();
-                colorChanger.colors = Menu.Settings.backgroundColor;
+                platl = GameObject.CreatePrimitive(
+                    Settings.Movement.platformShape
+                );
+
+                platl.transform.localScale =
+                    Settings.Movement.PlatformShapeScale;
+
+                platl.transform.position =
+                    TrueLeftHand().position +
+                    TrueLeftHand().right * 0.05f;
+
+                platl.transform.rotation =
+                    TrueLeftHand().rotation;
+
+                if (!nsp)
+                    FixStickyColliders(platl);
+
+                ColorChanger colorChanger =
+                    platl.AddComponent<ColorChanger>();
+
+                colorChanger.colors =
+                    Menu.Settings.backgroundColor;
             }
         }
         else if (platl != null)
         {
             Object.Destroy(platl);
-
             platl = null;
         }
 
@@ -111,13 +128,28 @@ public abstract class Movement
         {
             if (platr == null)
             {
-                platr = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                platr.transform.localScale = new Vector3(0.025f, 0.3f, 0.4f);
-                platr.transform.position = TrueRightHand().position - TrueRightHand().right * 0.05f;
-                platr.transform.rotation = TrueRightHand().rotation;
-                FixStickyColliders(platr);
-                ColorChanger colorChanger = platr.AddComponent<ColorChanger>();
-                colorChanger.colors = Menu.Settings.backgroundColor;
+                platr = GameObject.CreatePrimitive(
+                    Settings.Movement.platformShape
+                );
+
+                platr.transform.localScale =
+                    Settings.Movement.PlatformShapeScale;
+
+                platr.transform.position =
+                    TrueRightHand().position -
+                    TrueRightHand().right * 0.05f;
+
+                platr.transform.rotation =
+                    TrueRightHand().rotation;
+
+                if (!nsp)
+                    FixStickyColliders(platr);
+
+                ColorChanger colorChanger =
+                    platr.AddComponent<ColorChanger>();
+
+                colorChanger.colors =
+                    Menu.Settings.backgroundColor;
             }
         }
         else if (platr != null)
@@ -127,6 +159,84 @@ public abstract class Movement
         }
     }
 
+    private static readonly Dictionary<bool, List<GameObject>> frozonicPlatforms = new Dictionary<bool, List<GameObject>>();
+    private static readonly Dictionary<bool, int> platformIndex = new Dictionary<bool, int>();
+    public static void HandleFrozone(bool left)
+    {
+        bool grip = left ? leftGrab : rightGrab;
+
+        frozonicPlatforms.TryGetValue(left, out List<GameObject> frozonicPlatformList);
+        if (frozonicPlatformList == null)
+        {
+            frozonicPlatformList = new List<GameObject>();
+            frozonicPlatforms.Add(left, frozonicPlatformList);
+        }
+
+        platformIndex.TryGetValue(left, out int index);
+
+        if (grip)
+        {
+            GameObject platform;
+            if (frozonicPlatformList.Count >= 72)
+                platform = frozonicPlatformList[index];
+            else
+            {
+                platform = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                platform.GetComponent<Renderer>().material.color = Menu.Settings.backgroundColor.GetCurrentColor();
+                platform.transform.localScale = new Vector3(0.025f, 0.3f, 0.4f) * (1f);
+                platform.AddComponent<GorillaSurfaceOverride>().overrideIndex = 61;
+                frozonicPlatformList.Add(platform);
+            }
+
+            var (position, rotation, _, _, right) = left ? TrueLeftHand() : TrueRightHand();
+
+            platform.transform.position = position + (right * ((left ? 1f : -1f) * ((0.025f + platform.transform.localScale.x / 2f) * (1f))));
+            platform.transform.rotation = rotation;
+
+            index = (index + 1) % 72;
+        }
+
+        platformIndex[left] = index;
+
+        if (!grip && frozonicPlatformList.Count > 0)
+        {
+            int platformIndex = frozonicPlatformList.Count - 1;
+
+            Object.Destroy(frozonicPlatformList[platformIndex]);
+            frozonicPlatformList.RemoveAt(platformIndex);
+        }
+    }
+
+    public static void Frozone()
+    {
+        HandleFrozone(true);
+        HandleFrozone(false);
+
+        GorillaTagger.Instance.bodyCollider.enabled = !(leftGrab || rightGrab);
+    }
+
+    public static void PlatformGun()
+    {
+        if (GetGunInput(false))
+        {
+            var GunData = RenderGun();
+            GameObject NewPointer = GunData.NewPointer;
+
+            if (GetGunInput(true))
+            {
+                GameObject platform = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                Object.Destroy(platform.GetComponent<BoxCollider>());
+                platform.GetComponent<Renderer>().material.color = Menu.Settings.backgroundColor.GetCurrentColor();
+                platform.GetComponent<Renderer>().material.shader = Shader.Find("GorillaTag/UberShader");
+                platform.transform.localScale = new Vector3(0.025f, 0.3f, 0.4f);
+                platform.transform.position = NewPointer.transform.position;
+                platform.transform.rotation = Quaternion.Euler(Random.Range(0, 360), Random.Range(0, 360), Random.Range(0, 360));
+                Object.Destroy(platform, 1f);
+            }
+        }
+    }
+
+    // deprecated, we use networked object now
     public static void NetworkedPlats()
     {
         bool leftActive;
@@ -169,7 +279,7 @@ public abstract class Movement
                 colorChanger.colors =
                     Menu.Settings.backgroundColor;
 
-                SharpzNetwork.Send(
+                External.Send(
                     "platform",
                     ReceiverGroup.Others,
                     "left",
@@ -181,7 +291,7 @@ public abstract class Movement
         }
         else if (platl != null)
         {
-            SharpzNetwork.Send(
+            External.Send(
                 "platformDestroy",
                 ReceiverGroup.Others,
                 "left"
@@ -217,7 +327,7 @@ public abstract class Movement
                 colorChanger.colors =
                     Menu.Settings.backgroundColor;
 
-                SharpzNetwork.Send(
+                External.Send(
                     "platform",
                     ReceiverGroup.Others,
                     "right",
@@ -229,7 +339,7 @@ public abstract class Movement
         }
         else if (platr != null)
         {
-            SharpzNetwork.Send(
+            External.Send(
                 "platformDestroy",
                 ReceiverGroup.Others,
                 "right"
@@ -543,7 +653,7 @@ public abstract class Movement
     }
     private static Vector3 walkPos;
     private static Vector3 walkNormal;
-    private static float wallWalkStrength = 9.81f;
+    private static float wallWalkStrength = 7.81f;
 
     public static void WallWalk()
     {

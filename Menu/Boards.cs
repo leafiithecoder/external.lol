@@ -22,19 +22,9 @@ namespace SharpzReborn.Menu
             "If you get banned while using this, it's your responsibility.\n\n<alpha=128>Made with <3 by Sharpz.<alpha=255>\n\n ";
 
         public static string COCDefault = "Welcome to Sharpz Reborn! A Gorilla Tag menu made by Sharpz.\n" +
-            "Suspected Detected Mods:\n" +
-            "- Delay Ban Gun\n" +
-            "\n" +
-            "Meanings:\n" +
-            "[<color=purple>M</color>] Requires Master\n" +
-            "[<color=purple>M?</color>] Maybe Requires Master\n" +
-            "[<color=purple>D</color>] Detected\n" +
-            "[<color=purple>D</color>] Maybe Detected \n" +
-            "[<color=purple>KB</color>] Half Broken \n" +
-            "[<color=purple>BK</color>] Broken \n" +
-            "[<color=purple>CS</color>] Client Sided \n" +
-            "[<color=purple>CS?</color>] Client sided, but depends \n" +
-            "[<color=purple>SS</color>] Server Sided \n";
+            "MOTU:\n" +
+            "Yesterday was history, tomorrow, is a mystery, but today is a <b>gift</b>.\n" +
+            "That is why it is called the present.";
 
         public static string MotdSetText = MOTDDefault;
         public static string COCSetText = COCDefault;

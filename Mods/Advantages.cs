@@ -138,6 +138,7 @@ namespace SharpzReborn.Mods
         }
         public static void TagAll()
         {
+            if (!NetworkSystem.Instance.IsMasterClient) NotificationManager.SendNotification($"{fail} You are not the master client.");
             if (!NetworkSystem.Instance.InRoom) return;
 
             static void TurnOff()
@@ -154,37 +155,6 @@ namespace SharpzReborn.Mods
 
                 TurnOff();
                 NotificationManager.SendNotification("<color=grey>[</color><color=green>SUCCESS</color><color=grey>]</color> Everyone is tagged!");
-            }
-            else
-            {
-
-                if (!VRRig.LocalRig.IsTagged())
-                {
-                    NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You must be tagged.");
-                    TurnOff();
-                }
-                else
-                {
-                    bool isInfectedPlayers = VRRigExtensions.ActiveRigs.Any(vrrig => !vrrig.IsTagged());
-                    if (isInfectedPlayers)
-                    {
-                        foreach (var vrrig in VRRigExtensions.ActiveRigs.Where(vrrig => !vrrig.IsTagged()))
-                        {
-                            VRRig.LocalRig.enabled = false;
-
-                                VRRig.LocalRig.transform.position = vrrig.transform.position - new Vector3(0f, 0.1f, 0f);
-
-                            if (ValidateTag(vrrig))
-                                ReportTag(vrrig);
-                        }
-                    }
-                    else
-                    {
-                        NotificationManager.SendNotification("<color=grey>[</color><color=green>SUCCESS</color><color=grey>]</color> Everyone is tagged!");
-                        VRRig.LocalRig.enabled = true;
-                        TurnOff();
-                    }
-                }
             }
         }
 

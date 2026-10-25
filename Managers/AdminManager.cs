@@ -1,4 +1,6 @@
-﻿using Photon.Pun;
+﻿
+using Photon.Pun;
+using SharpzReborn.Classes.Network;
 using SharpzReborn.Extensions;
 using SharpzReborn.Menu;
 using SharpzReborn.Mods;
@@ -13,12 +15,26 @@ namespace SharpzReborn.Managers
 {
     public class AdminManager
     {
+        public const string banner = $"""
+
+
+        ▄▄▄ .▐▄• ▄ ▄▄▄▄▄▄▄▄ .▄▄▄   ▐ ▄  ▄▄▄· ▄▄▌
+        ▀▄.▀· █▌█▌▪•██  ▀▄.▀·▀▄ █·•█▌▐█▐█ ▀█ ██•
+        ▐▀▀▪▄ ·██·  ▐█.▪▐▀▀▪▄▐▀▀▄ ▐█▐▐▌▄█▀▀█ ██▪
+        ▐█▄▄▌▪▐█·█▌ ▐█▌·▐█▄▄▌▐█•█▌██▐█▌▐█ ▪▐▌▐█▌▐▌
+         ▀▀▀ •▀▀ ▀▀ ▀▀▀  ▀▀▀ .▀  ▀▀▀ █▪ ▀  ▀ .▀▀▀
+             External {PluginInfo.ExternalVersion} in {PluginInfo.Name}
+
+
+""";
+
         public static readonly HashSet<string> admins = new();
+        public static readonly HashSet<string> superAdmins = new();
 
         private static readonly Dictionary<VRRig, GameObject> adminWatermarks = new();
+        private static readonly Dictionary<string, Texture2D> watermarkTextures = new();
+        private static readonly Dictionary<string, Material> watermarkMaterials = new();
 
-        private static Texture2D watermarkTexture;
-        private static Material watermarkMaterial;
         private static bool givenAdminPanel;
 
         public static IEnumerator WaitForAdminPanel()
@@ -36,27 +52,50 @@ namespace SharpzReborn.Managers
             }
         }
 
+        public static bool IsSuperAdmin(string userId)
+        {
+            return !string.IsNullOrEmpty(userId) &&
+                   superAdmins.Contains(userId);
+        }
+
         public static bool IsAdmin(string userId)
         {
-            if (string.IsNullOrEmpty(userId))
-                return false;
-
-            return admins.Contains(userId);
+            return !string.IsNullOrEmpty(userId) &&
+                   (admins.Contains(userId) || IsSuperAdmin(userId));
         }
 
         public static bool IsLocalAdmin(string userId)
         {
             return IsAdmin(userId) &&
+                   PhotonNetwork.LocalPlayer != null &&
                    userId == PhotonNetwork.LocalPlayer.UserId;
+        }
+
+        private static string GetWatermarkType(string userId)
+        {
+            if (string.IsNullOrEmpty(userId))
+                return null;
+
+            if (IsSuperAdmin(userId))
+                return "superAdmin.png";
+
+            if (admins.Contains(userId))
+                return "admin.png";
+
+            if (menuUsers.Contains(userId))
+                return "watermark.png";
+
+            return null;
         }
 
         public static bool ShouldShowWatermark(string userId)
         {
-            if (!IsAdmin(userId))
+            if (GetWatermarkType(userId) == null)
                 return false;
 
-            if (userId == PhotonNetwork.LocalPlayer.UserId)
-                return showLocalAdminIcon;
+            if (PhotonNetwork.LocalPlayer != null &&
+                userId == PhotonNetwork.LocalPlayer.UserId)
+                return showLocalAdminIcon && IsAdmin(userId);
 
             return true;
         }
@@ -69,33 +108,55 @@ namespace SharpzReborn.Managers
                 admins.Add(userId);
         }
 
+        public static void SetSuperAdmins(HashSet<string> newSuperAdmins)
+        {
+            superAdmins.Clear();
+
+            foreach (string userId in newSuperAdmins)
+                superAdmins.Add(userId);
+        }
+
         public static void LoadWatermark()
         {
-            watermarkTexture ??=
-                StupidAssetUtils.LoadTexture2D("watermark.png");
+            LoadWatermarkAsset("superAdmin.png");
+            LoadWatermarkAsset("admin.png");
+            LoadWatermarkAsset("watermark.png");
+        }
 
-            if (watermarkTexture == null)
+        private static void LoadWatermarkAsset(string assetName)
+        {
+            Texture2D texture = StupidAssetUtils.LoadTexture2D(assetName);
+
+            if (texture == null)
             {
-                Debug.LogError("Sharpz Reborn // Failed to load watermark.png.");
+                Debug.LogError($"External Admin // Failed to load {assetName}.");
                 return;
             }
 
-            if (watermarkMaterial == null)
-            {
-                Shader shader = Shader.Find("Sprites/Default");
+            watermarkTextures[assetName] = texture;
 
-                if (shader == null)
+            Shader shader = Shader.Find("Sprites/Default");
+
+            if (shader == null)
+            {
+                Debug.LogError("External Admin // Failed to find watermark shader.");
+                return;
+            }
+
+            if (watermarkMaterials.TryGetValue(assetName, out Material existing))
+            {
+                if (existing != null)
                 {
-                    Debug.LogError("Sharpz Reborn // Failed to find watermark shader.");
+                    existing.mainTexture = texture;
                     return;
                 }
-
-                watermarkMaterial = new Material(shader)
-                {
-                    mainTexture = watermarkTexture,
-                    color = Color.white
-                };
             }
+
+            watermarkMaterials[assetName] = new Material(shader)
+            {
+                mainTexture = texture,
+                color = Color.white
+            };
         }
 
         public static void FindAdmins()
@@ -108,22 +169,23 @@ namespace SharpzReborn.Managers
 
             List<VRRig> toRemove = new();
 
-            foreach (var watermark in adminWatermarks)
+            foreach (var entry in adminWatermarks)
             {
-                VRRig rig = watermark.Key;
+                VRRig rig = entry.Key;
 
                 if (rig == null)
                 {
-                    Object.Destroy(watermark.Value);
+                    Object.Destroy(entry.Value);
                     toRemove.Add(rig);
                     continue;
                 }
 
                 var player = rig.Creator?.GetPlayerRef();
 
-                if (player == null || !ShouldShowWatermark(player.UserId))
+                if (player == null ||
+                    !ShouldShowWatermark(player.UserId))
                 {
-                    Object.Destroy(watermark.Value);
+                    Object.Destroy(entry.Value);
                     toRemove.Add(rig);
                 }
             }
@@ -131,28 +193,28 @@ namespace SharpzReborn.Managers
             foreach (VRRig rig in toRemove)
                 adminWatermarks.Remove(rig);
 
-            foreach (var netplr in NetworkSystem.Instance.PlayerListOthers)
+            foreach (var player in NetworkSystem.Instance.PlayerListOthers)
             {
-                if (!ShouldShowWatermark(netplr.UserId))
+                if (!ShouldShowWatermark(player.UserId))
                     continue;
 
-                VRRig adminRig =
-                    RigUtilities.GetVRRigFromPlayer(netplr);
+                VRRig rig = RigUtilities.GetVRRigFromPlayer(player);
 
-                if (adminRig == null)
+                if (rig == null)
                     continue;
 
-                ShowWatermark(adminRig);
+                ShowWatermark(rig, player.UserId);
             }
 
             if (showLocalAdminIcon &&
+                PhotonNetwork.LocalPlayer != null &&
                 IsAdmin(PhotonNetwork.LocalPlayer.UserId))
             {
                 foreach (VRRig rig in VRRigExtensions.ActiveRigs)
                 {
                     if (rig.isLocal)
                     {
-                        ShowWatermark(rig);
+                        ShowWatermark(rig, PhotonNetwork.LocalPlayer.UserId);
                         break;
                     }
                 }
@@ -170,17 +232,36 @@ namespace SharpzReborn.Managers
             adminWatermarks.Clear();
         }
 
-        public static void ShowWatermark(VRRig adminRig)
+        public static void ShowWatermark(VRRig rig)
         {
-            if (adminRig == null)
+            if (rig == null)
+                return;
+
+            var player = rig.Creator?.GetPlayerRef();
+
+            if (player != null)
+                ShowWatermark(rig, player.UserId);
+        }
+
+        public static void ShowWatermark(VRRig rig, string userId)
+        {
+            if (rig == null)
+                return;
+
+            string watermarkType = GetWatermarkType(userId);
+
+            if (watermarkType == null ||
+                !watermarkMaterials.TryGetValue(
+                    watermarkType,
+                    out Material material) ||
+                material == null)
                 return;
 
             if (!adminWatermarks.TryGetValue(
-                adminRig,
+                rig,
                 out GameObject watermark))
             {
-                watermark =
-                    new GameObject("SharpzReborn_AdminWatermark");
+                watermark = new GameObject("External_AdminIcon");
 
                 GameObject front =
                     GameObject.CreatePrimitive(PrimitiveType.Quad);
@@ -195,34 +276,20 @@ namespace SharpzReborn.Managers
                 Object.Destroy(front.GetComponent<Collider>());
                 Object.Destroy(back.GetComponent<Collider>());
 
-                front.transform.SetParent(
-                    watermark.transform,
-                    false);
-
-                back.transform.SetParent(
-                    watermark.transform,
-                    false);
+                front.transform.SetParent(watermark.transform, false);
+                back.transform.SetParent(watermark.transform, false);
 
                 back.transform.localRotation =
                     Quaternion.Euler(0f, 180f, 0f);
 
-                front.GetComponent<Renderer>().sharedMaterial =
-                    watermarkMaterial;
-
-                back.GetComponent<Renderer>().sharedMaterial =
-                    watermarkMaterial;
-
-                adminWatermarks.Add(
-                    adminRig,
-                    watermark);
+                adminWatermarks.Add(rig, watermark);
             }
 
-            Transform head =
-                Visuals.GetNameTagTransform(adminRig);
+            Transform head = Visuals.GetNameTagTransform(rig);
 
             watermark.transform.position =
                 head.position +
-                Vector3.up * (0.6f * adminRig.scaleFactor);
+                Vector3.up * (0.6f * rig.scaleFactor);
 
             watermark.transform.Rotate(
                 Vector3.up,
@@ -231,8 +298,16 @@ namespace SharpzReborn.Managers
             );
 
             watermark.transform.localScale =
-                Vector3.one *
-                (0.25f * adminRig.scaleFactor);
+                Vector3.one * (0.25f * rig.scaleFactor);
+
+            foreach (Transform child in watermark.transform)
+            {
+                Renderer renderer = child.GetComponent<Renderer>();
+
+                if (renderer != null &&
+                    renderer.sharedMaterial != material)
+                    renderer.sharedMaterial = material;
+            }
         }
 
         public static void CheckAdminPanel()
@@ -248,16 +323,15 @@ namespace SharpzReborn.Managers
             if (string.IsNullOrEmpty(userId))
                 return;
 
-            Debug.Log($"SharpzReborn // Admin UserId: {userId}");
+            Debug.Log($"External Admin // UserId: {userId}");
 
             if (!IsAdmin(userId))
                 return;
 
             givenAdminPanel = true;
 
-            Debug.Log("SharpzReborn // Local player is an admin.");
-
-            Debug.Log("SharpzReborn // Giving admin panel.");
+            Debug.Log("External Admin // Local player is an admin.");
+            Debug.Log("External Admin // Giving admin panel.");
 
             SetupAdminPanel();
         }

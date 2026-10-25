@@ -4,10 +4,9 @@ using SharpzReborn.Managers;
 using SharpzReborn.Notifications;
 using System.Collections;
 using UnityEngine;
-using static SharpzReborn.Menu.Buttons;
-using static SharpzReborn.Menu.Main;
 using SharpzReborn.Classes;
 using SharpzReborn.Utilities;
+using static SharpzReborn.Tools.Utilities;
 
 namespace SharpzReborn.Mods
 {
@@ -25,22 +24,25 @@ namespace SharpzReborn.Mods
 
         public override void OnJoinedRoom()
         {
-            lastRoom = PhotonNetwork.CurrentRoom.Name;
-            RoomHistory.Add(PhotonNetwork.CurrentRoom.Name + $" [{Tools.Utilities.GetCurrentGamemodeColor()}]");
+            OnJoin();
         }
 
         public override void OnPlayerEnteredRoom(
             Photon.Realtime.Player newPlayer)
         {
             base.OnPlayerEnteredRoom(newPlayer);
+            OnOtherPlayerJoin(newPlayer);
+        }
 
-            NetworkedObject.SyncToPlayer(newPlayer);
+        public override void OnPlayerLeftRoom(Photon.Realtime.Player otherPlayer)
+        {
+            base.OnPlayerLeftRoom(otherPlayer);
+            OnOtherPlayerLeave(otherPlayer);
         }
 
         public override void OnLeftRoom()
         {
-            Debug.Log("pun succeeded");
-            Visuals.ClearLinePool(true);
+            OnLeave();
         }
 
         public static void JoinLastRoom()

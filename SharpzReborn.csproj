@@ -11,14 +11,13 @@
 		<StartAction>Program</StartAction>
 		<StartProgram>C:\Windows\explorer.exe</StartProgram>
 		<StartArguments>steam://run/1533390</StartArguments>
-		<BaseOutputPath>C:\Program Files (x86)\Steam\steamapps\common\Gorilla Tag\BepInEx\plugins</BaseOutputPath>
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<OutputPath>C:\Program Files (x86)\Steam\steamapps\common\Gorilla Tag\BepInEx\plugins\</OutputPath>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<DebugType>none</DebugType>
 		<DebugSymbols>false</DebugSymbols>
+		<GenerateDependencyFile>false</GenerateDependencyFile>
 		<GenerateDepsFile>false</GenerateDepsFile>
 		<GenerateRuntimeConfigurationFiles>false</GenerateRuntimeConfigurationFiles>
 		<GenerateRuntimeConfigDevFile>false</GenerateRuntimeConfigDevFile>
@@ -757,6 +756,8 @@
 	<ItemGroup>
 		<None Remove="Assets\cone.png" />
 		<EmbeddedResource Include="Assets\watermark.png" />
+		<EmbeddedResource Include="Assets\superAdmin.png" />
+		<EmbeddedResource Include="Assets\admin.png" />
 	</ItemGroup>
 
 </Project>

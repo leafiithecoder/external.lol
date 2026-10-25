@@ -1,84 +1,129 @@
 using HarmonyLib;
+using Photon.Pun;
+using SharpzReborn.Managers;
+using SharpzReborn.Notifications;
 using UnityEngine;
+using static Modio.API.ModioAPI;
+using static SharpzReborn.Patches.PatchHandler;
 
-namespace SharpzReborn.Patches.Internal;
-
-public abstract class AntiCheatPatches
+namespace SharpzReborn.Patches.Internal
 {
-    [HarmonyPatch(typeof(MonkeAgent), "SendReport")]
-    public class SendReportPatch
+    public class AntiCheatPatches
     {
-        // If you want to log, or send notifications for anti cheat reports you can do it here
-        private static bool Prefix(string susReason, string susId, string susNick) => false;
-    }
+        [SecurityPatch]
+        [HarmonyPatch(typeof(MonkeAgent), nameof(MonkeAgent.SendReport))]
+        public class SendReportPatch
+        {
+            public static bool AntiCheatSelf;
+            public static bool AntiCheatAll;
+            public static bool AntiCheatReasonHide;
+            public static bool AntiACReport;
 
-    [HarmonyPatch(typeof(MonkeAgent), "CloseInvalidRoom")]
-    public class NoCloseInvalidRoom
-    {
-        private static bool Prefix() =>
-                false;
-    }
+            private static bool Prefix(string susReason, string susId, string susNick)
+            {
+                if (susReason.ToLower() == "empty rig")
+                    return false;
 
-    [HarmonyPatch(typeof(MonkeAgent), "CheckReports")]
-    public class NoCheckReports
-    {
-        private static bool Prefix() =>
-                false;
-    }
+                if (AntiCheatSelf || AntiCheatAll)
+                {
+                    if (susId == PhotonNetwork.LocalPlayer.UserId)
+                        NotificationManager.SendNotification($"<color=grey>[</color><color=green>ANTI-CHEAT</color><color=grey>]</color> You have been reported for {(AntiCheatReasonHide ? "hidden reason" : susReason)}.");
+                    else
+                    {
+                        if (AntiCheatAll)
+                            NotificationManager.SendNotification($"<color=grey>[</color><color=green>ANTI-CHEAT</color><color=grey>]</color> {susNick} was reported for {(AntiCheatReasonHide ? "hidden reason" : susReason)}.");
+                    }
+                }
 
-    [HarmonyPatch(typeof(MonkeAgent), "DispatchReport")]
-    public class NoDispatchReport
-    {
-        private static bool Prefix() =>
-                false;
-    }
+                if (AntiACReport)
+                {
+                    Mods.Safety.AntiReportFRT(PhotonNetwork.LocalPlayer);
+                    NotificationManager.ClearAllNotifications();
+                    NotificationManager.SendNotification("<color=grey>[</color><color=purple>ANTI-REPORT</color><color=grey>]</color> The anti cheat attempted to report you, you have been disconnected.");
+                }
 
-    [HarmonyPatch(typeof(MonkeAgent), "GetRPCCallTracker")]
-    internal class NoGetRPCCallTracker
-    {
-        private static bool Prefix() =>
-                false;
-    }
+                return false;
+            }
+        }
 
-    [HarmonyPatch(typeof(MonkeAgent), "LogErrorCount")]
-    public class NoLogErrorCount
-    {
-        private static bool Prefix(string logString, string stackTrace, LogType type) =>
+        [SecurityPatch]
+        [HarmonyPatch(typeof(MonkeAgent), nameof(MonkeAgent.CloseInvalidRoom))]
+        public class NoCloseInvalidRoom
+        {
+            private static bool Prefix() =>
                 false;
-    }
+        }
 
-    [HarmonyPatch(typeof(MonkeAgent), "QuitDelay", MethodType.Enumerator)]
-    public class NoQuitDelay
-    {
-        private static bool Prefix() =>
+        [SecurityPatch]
+        [HarmonyPatch(typeof(MonkeAgent), nameof(MonkeAgent.CheckReports))]
+        public class NoCheckReports
+        {
+            private static bool Prefix() =>
                 false;
-    }
+        }
 
-    [HarmonyPatch(typeof(GorillaGameManager), "ForceStopGame_DisconnectAndDestroy")]
-    public class NoQuitOnBan
-    {
-        private static bool Prefix() =>
+        [SecurityPatch]
+        [HarmonyPatch(typeof(MonkeAgent), nameof(MonkeAgent.DispatchReport))]
+        public class NoDispatchReport
+        {
+            private static bool Prefix() =>
                 false;
-    }
+        }
 
-    [HarmonyPatch(typeof(MonkeAgent), "ShouldDisconnectFromRoom")]
-    public class NoShouldDisconnectFromRoom
-    {
-        private static bool Prefix() =>
+        [SecurityPatch]
+        [HarmonyPatch(typeof(MonkeAgent), nameof(MonkeAgent.GetRPCCallTracker))]
+        internal class NoGetRPCCallTracker
+        {
+            private static bool Prefix() =>
                 false;
-    }
+        }
 
-    [HarmonyPatch(typeof(GorillaNetworkPublicTestsJoin), "GracePeriod")]
-    public class GracePeriodPatch1
-    {
-        private static bool Prefix() =>
+        [SecurityPatch]
+        [HarmonyPatch(typeof(MonkeAgent), nameof(MonkeAgent.LogErrorCount))]
+        public class NoLogErrorCount
+        {
+            private static bool Prefix(string logString, string stackTrace, LogType type) =>
                 false;
-    }
+        }
 
-    [HarmonyPatch(typeof(GorillaNetworkPublicTestJoin2), "GracePeriod")]
-    public class GracePeriodPatch2
-    {
-        private static bool Prefix() =>
+        [SecurityPatch]
+        [HarmonyPatch(typeof(MonkeAgent), nameof(MonkeAgent.QuitDelay), MethodType.Enumerator)]
+        public class NoQuitDelay
+        {
+            private static bool Prefix() =>
                 false;
+        }
+
+        [SecurityPatch]
+        [HarmonyPatch(typeof(GorillaGameManager), nameof(GorillaGameManager.ForceStopGame_DisconnectAndDestroy))]
+        public class NoQuitOnBan
+        {
+            private static bool Prefix() =>
+                false;
+        }
+
+        [SecurityPatch]
+        [HarmonyPatch(typeof(MonkeAgent), nameof(MonkeAgent.ShouldDisconnectFromRoom))]
+        public class NoShouldDisconnectFromRoom
+        {
+            private static bool Prefix() =>
+                false;
+        }
+
+        [SecurityPatch]
+        [HarmonyPatch(typeof(GorillaNetworkPublicTestsJoin), nameof(GorillaNetworkPublicTestsJoin.GracePeriod))]
+        public class GracePeriodPatch1
+        {
+            private static bool Prefix() =>
+                false;
+        }
+
+        [SecurityPatch]
+        [HarmonyPatch(typeof(GorillaNetworkPublicTestJoin2), nameof(GorillaNetworkPublicTestJoin2.GracePeriod))]
+        public class GracePeriodPatch2
+        {
+            private static bool Prefix() =>
+                false;
+        }
     }
 }
