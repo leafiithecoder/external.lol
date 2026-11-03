@@ -15,7 +15,6 @@ namespace SharpzReborn.Classes.Network
         private static bool initialized;
         public static bool ExternalEnabled = true;
 
-
         public static void Initialize()
         {
             if (initialized)
@@ -194,7 +193,12 @@ namespace SharpzReborn.Classes.Network
                         Vector3 position = (Vector3)args[4];
                         Quaternion rotation = (Quaternion)args[5];
                         Vector3 scale = (Vector3)args[6];
-                        Color color = (Color)args[7];
+                        Color color = new(
+                            (float)args[7],
+                            (float)args[8],
+                            (float)args[9],
+                            (float)args[10]
+                        );
 
                         if (ExternalObject.Get(networkId) != null)
                             break;

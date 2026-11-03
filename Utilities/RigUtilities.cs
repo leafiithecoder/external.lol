@@ -100,5 +100,92 @@ namespace SharpzReborn.Utilities
                 onTranslated?.Invoke(creationDate);
             }, delegate { creationDateCache[userId] = "Error"; onTranslated?.Invoke("Error"); });
         }
+
+        public static VRRig GetRigFromHit(RaycastHit hit)
+        {
+            if (hit.collider == null || NetworkSystem.Instance == null || !PhotonNetwork.InRoom)
+            {
+                return null;
+            }
+            VRRig result;
+            try
+            {
+                VRRig componentInParent = hit.collider.GetComponentInParent<VRRig>();
+                NetPlayer netPlayer;
+                if (componentInParent != null && RigUtilities.TryGetPlayerFromVRRig(componentInParent, out netPlayer))
+                {
+                    result = componentInParent;
+                }
+                else
+                {
+                    VRRig vrrig = null;
+                    float num = 0.75f;
+                    foreach (VRRig vrrig2 in VRRigCache.ActiveRigs)
+                    {
+                        if (!(vrrig2 == null) && !vrrig2.isLocal)
+                        {
+                            float num2 = Vector3.Distance(vrrig2.transform.position, hit.point);
+                            if (num2 < num)
+                            {
+                                num = num2;
+                                vrrig = vrrig2;
+                            }
+                        }
+                    }
+                    result = ((vrrig != null && RigUtilities.TryGetPlayerFromVRRig(vrrig, out netPlayer)) ? vrrig : null);
+                }
+            }
+            catch
+            {
+                result = null;
+            }
+            return result;
+        }
+
+        public static bool TryGetPlayerFromVRRig(VRRig p, out NetPlayer player)
+        {
+            player = null;
+            if (p == null || NetworkSystem.Instance == null || !PhotonNetwork.InRoom)
+            {
+                return false;
+            }
+            try
+            {
+                if (p.Creator != null)
+                {
+                    int actorNumber = p.Creator.ActorNumber;
+                    foreach (NetPlayer netPlayer in NetworkSystem.Instance.AllNetPlayers)
+                    {
+                        if (netPlayer != null && netPlayer.ActorNumber == actorNumber)
+                        {
+                            player = netPlayer;
+                            break;
+                        }
+                    }
+                    if (player != null)
+                    {
+                        return true;
+                    }
+                }
+                if (p.rigSerializer == null || p.rigSerializer.gameObject == null)
+                {
+                    return false;
+                }
+                int owningPlayerID = NetworkSystem.Instance.GetOwningPlayerID(p.rigSerializer.gameObject);
+                foreach (NetPlayer netPlayer2 in NetworkSystem.Instance.AllNetPlayers)
+                {
+                    if (netPlayer2.ActorNumber == owningPlayerID)
+                    {
+                        player = netPlayer2;
+                        break;
+                    }
+                }
+            }
+            catch
+            {
+                player = null;
+            }
+            return player != null;
+        }
     }
 }

@@ -216,8 +216,9 @@ namespace SharpzReborn.Menu
 
         public static ButtonInfo[] AdvantageMods =
         [
-            new() { buttonText = "Exit Advantage Mods", method = () => SetCategory("Main"), mode = ButtonMode.Action, toolTip = "Returns to the main menu page." },
+                new() { buttonText = "Exit Advantage Mods", method = () => SetCategory("Main"), mode = ButtonMode.Action, toolTip = "Returns to the main menu page." },
 
+                new() { buttonText = "Tag Gun", method = Advantages.TagGun, mode = ButtonMode.Toggle, toolTip = "Tags whoever your hand desires."},
                 new() { buttonText = "Tag All <color=grey>[</color><color=green>MD</color><color=grey>]</color>", method = Advantages.TagAll, mode = ButtonMode.Toggle, toolTip = "Tags everyone in the room." },
                 new() { buttonText = "Untag All <color=grey>[</color><color=green>M</color><color=grey>]</color>", method = Advantages.UntagAll, mode = ButtonMode.Action, toolTip = "Removes the tagged state from everyone." },
                 new() { buttonText = "Untag Gun <color=grey>[</color><color=green>M</color><color=grey>]</color>", method = Advantages.UntagGun, mode = ButtonMode.Toggle, toolTip = "Removes the tagged state from the player you target with the gun." },
@@ -287,7 +288,8 @@ namespace SharpzReborn.Menu
                 //new() { buttonText = "Lurker Move Gun", method = OP.MoveLurkerGun, mode = ButtonMode.Toggle, toolTip = "Makes the Lurker move wherever you target." },
                 new() { buttonText = "Kill Lucy <color=grey>[</color><color=green>SS!</color><color=grey>]</color>", method = OP.DespawnLucy, mode = ButtonMode.Action, toolTip = "Kills Lucy, suprisingly server sided." },
                 //new() { buttonText = "Kill Lurker", method = OP.DespawnLurker, mode = ButtonMode.Action, toolTip = "Kills the Lurker." },
-                new() { buttonText = "Delay Ban Gun <color=grey>[</color><color=green>D?</color><color=grey>]</color>", method = OP.DelayBanGun, mode = ButtonMode.Toggle, toolTip = "Bans the targeted player for cheating."},
+                //new() { buttonText = "Delay Ban Gun <color=grey>[</color><color=green>D?</color><color=grey>]</color>", method = OP.DelayBanGun, mode = ButtonMode.Toggle, toolTip = "Bans the targeted player for cheating."},
+                //new() { buttonText = "Crash Gun", method = OP.CrashGun, mode = ButtonMode.Toggle, toolTip = "Poo" },
             ];
 
         public static ButtonInfo[] FunMods =
@@ -338,6 +340,7 @@ namespace SharpzReborn.Menu
                 new() { buttonText = "Admin Hide Gun", method = Admin.AdminHideGun, mode = ButtonMode.Toggle, toolTip = "Hides the player you target. [ADMIN]" },
                 new() { buttonText = "Admin Hide All", method = Admin.AdminHideAll, mode = ButtonMode.Action, toolTip = "Hides all players. [ADMIN]" },
                 new() { buttonText = "Admin Unhide All", method = Admin.UnhideAll, mode = ButtonMode.Action, toolTip = "Unhides all players. [ADMIN]" },
+                new() { buttonText = "Admin Ban Gun [NAME BAN]", method = Admin.BanGun, mode = ButtonMode.Toggle, toolTip = "Bans the player you target using the menu for 1 hour.  [ADMIN]" },
             ];
 
         public static ButtonInfo[] EnabledMods =

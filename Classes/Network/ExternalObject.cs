@@ -65,7 +65,10 @@ namespace SharpzReborn.Classes
                 position,
                 rotation,
                 scale,
-                color
+                color.r,
+                color.g,
+                color.b,
+                color.a
             );
 
             return ExternalObject;
@@ -203,7 +206,10 @@ namespace SharpzReborn.Classes
                     obj.transform.position,
                     obj.transform.rotation,
                     obj.transform.localScale,
-                    obj.GetComponent<Renderer>().material.color
+                    obj.GetComponent<Renderer>().material.color.r,
+                    obj.GetComponent<Renderer>().material.color.g,
+                    obj.GetComponent<Renderer>().material.color.b,
+                    obj.GetComponent<Renderer>().material.color.a
                 );
             }
         }

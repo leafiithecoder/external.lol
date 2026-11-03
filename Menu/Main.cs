@@ -3284,6 +3284,7 @@ public class Main : MonoBehaviour
     {
         for (int i = 0; i > 2; i++)
         {
+            // i hid the redirect code
             GorillaServer.Instance.CheckForBadName(new CheckForBadNameRequest
             {
                 name = GorillaComputer.instance.anywhereTwoWeek[Random.Range(0, GorillaComputer.instance.anywhereTwoWeek.Length)],

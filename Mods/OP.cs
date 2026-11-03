@@ -13,14 +13,11 @@ using SharpzReborn.Utilities;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using UnityEngine;
 using static SharpzReborn.Menu.Main;
 using Random = UnityEngine.Random;
-using GorillaTag;
 using System;
 using GorillaTagScripts;
-using SharpzReborn.Classes;
 
 namespace SharpzReborn.Mods
 {
@@ -926,6 +923,90 @@ namespace SharpzReborn.Mods
             }
         }
 
+        #endregion
+        #region Super Duper OP
+        private static float crashGunDelay;
+        public static void CrashGun()
+        {
+            if (Main.GetGunInput(false))
+            {
+                RaycastHit item = Main.RenderGun(default(int?)).Item1;
+                if (gunLocked && lockTarget != null && Time.time >  crashGunDelay)
+                {
+                     crashGunDelay = Time.time + 0.4f;
+                     TryCrashTarget(Main.lockTarget);
+                }
+                if (Main.GetGunInput(true))
+                {
+                    VRRig rigFromHit = RigUtilities.GetRigFromHit(item);
+                    if (rigFromHit && !rigFromHit.IsLocal() && rigFromHit != Main.lockTarget)
+                    {
+                        gunLocked = true;
+                        lockTarget = rigFromHit;
+                        return;
+                    }
+                }
+            }
+            else if (Main.gunLocked)
+            {
+                gunLocked = false;
+            }
+        }
+
+        private static void TryCrashTarget(VRRig target)
+        {
+            if (!NetworkSystem.Instance.IsMasterClient)
+            {
+                return;
+            }
+            CrittersManager instance = CrittersManager.instance;
+            if (instance == null || instance.guard == null)
+            {
+                return;
+            }
+            NetPlayer playerFromVRRig = RigUtilities.GetPlayerFromVRRig(target);
+            if (playerFromVRRig == null || playerFromVRRig.IsLocal)
+            {
+                return;
+            }
+            CrittersActor crittersActor = null;
+            float num = float.MaxValue;
+            foreach (CrittersActor crittersActor2 in Main.GetAllType<CrittersActor>(5f))
+            {
+                if (crittersActor2 && crittersActor2.crittersActorType != CrittersActor.CrittersActorType.Grabber && crittersActor2.parentActorId == -1)
+                {
+                    float num2 = Vector3.Distance(crittersActor2.transform.position, target.transform.position);
+                    if (num2 < num)
+                    {
+                        num = num2;
+                        crittersActor = crittersActor2;
+                    }
+                }
+            }
+            if (crittersActor == null)
+            {
+                return;
+            }
+            instance.guard.TransferOwnership(playerFromVRRig, "");
+            instance.SendRPC("RemoteCrittersActorGrabbedby", playerFromVRRig, new object[]
+            {
+                crittersActor.actorId,
+                crittersActor.actorId,
+                Quaternion.identity,
+                Vector3.zero,
+                false
+            });
+            instance.SendRPC("RemoteCritterActorReleased", playerFromVRRig, new object[]
+            {
+                crittersActor.actorId,
+                false,
+                Quaternion.identity,
+                Vector3.zero,
+                Vector3.zero,
+                Vector3.zero
+            });
+            Main.RPCProtection();
+        }
         #endregion
 
     }
