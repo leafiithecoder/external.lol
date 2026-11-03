@@ -1,9 +1,9 @@
-﻿using SharpzReborn.Classes;
-using SharpzReborn.Notifications;
+﻿using externallol.Classes;
+using externallol.Notifications;
 using UnityEngine;
-using static SharpzReborn.Menu.Buttons;
+using static externallol.Menu.Buttons;
 
-namespace SharpzReborn.Mods.Settings;
+namespace externallol.Mods.Settings;
 
 // asdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdf
 public class Movement

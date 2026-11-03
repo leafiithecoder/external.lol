@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
-using SharpzReborn.Menu;
+using externallol.Menu;
 using UnityEngine;
 
-namespace SharpzReborn.Classes
+namespace externallol.Classes
 {
     public class ExtGradient
     {

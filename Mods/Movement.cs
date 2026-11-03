@@ -2,17 +2,17 @@
 using GorillaLocomotion;
 using Photon.Pun;
 using Photon.Realtime;
-using SharpzReborn.Classes;
-using SharpzReborn.Classes.Network;
-using SharpzReborn.Menu;
+using externallol.Classes;
+using externallol.Classes.Network;
+using externallol.Menu;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.XR;
-using static SharpzReborn.Menu.Buttons;
-using static SharpzReborn.Menu.Main;
+using static externallol.Menu.Buttons;
+using static externallol.Menu.Main;
 
-namespace SharpzReborn.Mods;
+namespace externallol.Mods;
 
 public abstract class Movement
 {

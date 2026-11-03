@@ -5,10 +5,10 @@ using GorillaNetworking;
 using HarmonyLib;
 using Photon.Pun;
 using Photon.Realtime;
-using SharpzReborn.Classes;
-using SharpzReborn.Managers;
-using SharpzReborn.Notifications;
-using SharpzReborn.Tools;
+using externallol.Classes;
+using externallol.Managers;
+using externallol.Notifications;
+using externallol.Tools;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -19,14 +19,14 @@ using UnityEngine.UI;
 using UnityEngine.XR;
 using CommonUsages = UnityEngine.XR.CommonUsages;
 using Valve.VR;
-using static SharpzReborn.Menu.Buttons;
-using static SharpzReborn.Menu.Settings;
-using Button = SharpzReborn.Classes.Button;
+using static externallol.Menu.Buttons;
+using static externallol.Menu.Settings;
+using Button = externallol.Classes.Button;
 using Random = UnityEngine.Random;
-using static SharpzReborn.Tools.Utilities;
-using SharpzReborn.Classes.Network;
+using static externallol.Tools.Utilities;
+using externallol.Classes.Network;
 
-namespace SharpzReborn.Menu;
+namespace externallol.Menu;
 
 [HarmonyPatch(typeof(GTPlayer), nameof(GTPlayer.LateUpdate))]
 public class Main : MonoBehaviour
@@ -3292,5 +3292,10 @@ public class Main : MonoBehaviour
                 forTroop = false
             }, null, null);
         }
+    }
+
+    public static void Nothing()
+    {
+        return;
     }
 }

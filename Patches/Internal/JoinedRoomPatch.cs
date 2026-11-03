@@ -1,7 +1,7 @@
 using GorillaNetworking;
 using HarmonyLib;
 
-namespace SharpzReborn.Patches.Internal
+namespace externallol.Patches.Internal
 {
     [HarmonyPatch(typeof(PhotonNetworkController), nameof(PhotonNetworkController.OnJoinedRoom))]
     public class JoinedRoomPatch

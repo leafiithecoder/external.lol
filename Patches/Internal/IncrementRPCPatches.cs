@@ -1,7 +1,7 @@
 using HarmonyLib;
 using Photon.Pun;
 
-namespace SharpzReborn.Patches.Internal
+namespace externallol.Patches.Internal
 {
     public abstract class IncrementRPCPatches
     {

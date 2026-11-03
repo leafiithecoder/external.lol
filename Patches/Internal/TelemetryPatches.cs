@@ -3,7 +3,7 @@ using GorillaNetworking;
 using HarmonyLib;
 using Liv.Lck.Telemetry;
 
-namespace SharpzReborn.Patches.Internal;
+namespace externallol.Patches.Internal;
 
 public static class TelemetryPatches
 {

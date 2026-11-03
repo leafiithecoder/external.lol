@@ -1,11 +1,11 @@
-﻿using static SharpzReborn.Menu.Main;
+﻿using static externallol.Menu.Main;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace SharpzReborn.Mods
+namespace externallol.Mods
 {
     public class Player
     {

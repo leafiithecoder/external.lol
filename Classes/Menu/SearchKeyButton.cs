@@ -1,7 +1,7 @@
 using UnityEngine;
-using static SharpzReborn.Menu.Main;
+using static externallol.Menu.Main;
 
-namespace SharpzReborn.Classes
+namespace externallol.Classes
 {
     public class SearchKeyButton : MonoBehaviour
     {

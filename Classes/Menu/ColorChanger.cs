@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using SharpzReborn.Menu;
+using externallol.Menu;
 using UnityEngine;
 
-namespace SharpzReborn.Classes
+namespace externallol.Classes
 {
     public class ColorChanger : MonoBehaviour
     {

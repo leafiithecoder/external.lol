@@ -1,7 +1,7 @@
-﻿using SharpzReborn.Tools;
+﻿using externallol.Tools;
 using UnityEngine;
 
-namespace SharpzReborn.Classes.Network
+namespace externallol.Classes.Network
 {
     public static class NetworkedStupidAssetUtils
     {

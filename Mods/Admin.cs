@@ -1,15 +1,15 @@
 ﻿using GorillaLocomotion;
 using Photon.Realtime;
 using Photon.Voice;
-using SharpzReborn.Classes;
-using SharpzReborn.Extensions;
+using externallol.Classes;
+using externallol.Extensions;
 using UnityEngine;
 using UnityEngine.UIElements;
-using static SharpzReborn.Menu.Main;
-using static SharpzReborn.Utilities.RigUtilities;
-using exec = SharpzReborn.Classes.Network.External;
+using static externallol.Menu.Main;
+using static externallol.Utilities.RigUtilities;
+using exec = externallol.Classes.Network.External;
 
-namespace SharpzReborn.Mods
+namespace externallol.Mods
 {
     public class Admin // only for admins
     {

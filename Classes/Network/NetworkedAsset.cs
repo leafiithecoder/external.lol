@@ -1,7 +1,7 @@
 ﻿using Photon.Pun;
 using UnityEngine;
 
-namespace SharpzReborn.Classes.Network
+namespace externallol.Classes.Network
 {
     public class NetworkedAsset : ExternalObject
     {

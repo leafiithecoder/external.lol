@@ -4,7 +4,7 @@
 		<TargetFramework>netstandard2.1</TargetFramework>
 		<LangVersion>latest</LangVersion>
 		<OutputType>Library</OutputType>
-		<AssemblyName>SharpzReborn</AssemblyName>
+		<AssemblyName>externallol</AssemblyName>
 	</PropertyGroup>
 
 	<PropertyGroup>

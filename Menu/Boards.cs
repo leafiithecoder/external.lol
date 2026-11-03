@@ -1,7 +1,7 @@
 ﻿using TMPro;
 using UnityEngine;
 
-namespace SharpzReborn.Menu
+namespace externallol.Menu
 {
     public enum BoardType
     {
@@ -13,15 +13,15 @@ namespace SharpzReborn.Menu
 
     public class Boards
     {
-        public static string Title = $"Sharpz Reborn {Main.ModInfoNotif("V1.5")}";
+        public static string Title = $"external.lol {Main.ModInfoNotif("V1.5")}";
 
-        public static string MOTDDefault = "Welcome to Sharpz Reborn! A menu made by Sharpz.\n " +
+        public static string MOTDDefault = "Welcome to external.lol! A menu made by Sharpz.\n " +
             "This menu is completely free and open sourced, if you paid for this menu you have been <color=red>scammed.</color>\n" +
             $"There are a total of <color=purple>{Buttons.ButtonCount}</color> mods on this menu.\n" +
             "I am not responsible for any bans using this menu.\n" +
             "If you get banned while using this, it's your responsibility.\n\n<alpha=128>Made with <3 by Sharpz.<alpha=255>\n\n ";
 
-        public static string COCDefault = "Welcome to Sharpz Reborn! A Gorilla Tag menu made by Sharpz.\n" +
+        public static string COCDefault = "Welcome to external.lol! A Gorilla Tag menu made by Sharpz.\n" +
             "MOTU:\n" +
             "Yesterday was history, tomorrow, is a mystery, but today is a <b>gift</b>.\n" +
             "That is why it is called the present.";

@@ -1,17 +1,17 @@
 ﻿
 using Photon.Pun;
-using SharpzReborn.Classes.Network;
-using SharpzReborn.Extensions;
-using SharpzReborn.Menu;
-using SharpzReborn.Mods;
-using SharpzReborn.Tools;
-using SharpzReborn.Utilities;
+using externallol.Classes.Network;
+using externallol.Extensions;
+using externallol.Menu;
+using externallol.Mods;
+using externallol.Tools;
+using externallol.Utilities;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static SharpzReborn.Menu.Main;
+using static externallol.Menu.Main;
 
-namespace SharpzReborn.Managers
+namespace externallol.Managers
 {
     public class AdminManager
     {

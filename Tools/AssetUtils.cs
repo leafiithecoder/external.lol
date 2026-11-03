@@ -2,7 +2,7 @@ using System.IO;
 using System.Reflection;
 using UnityEngine;
 
-namespace SharpzReborn.Tools;
+namespace externallol.Tools;
 
 // This class is for loading assets from embedded resources
 // Make sure all assets in the assets folder are marked as an embedded resource!
@@ -11,7 +11,7 @@ public static class StupidAssetUtils
 {
     private static AssetBundle assetBundle;
     // Make sure this matches the name of the project/csproj file!
-    private const string ProjectName = "SharpzReborn";
+    private const string ProjectName = "externallol";
 
     public static Texture2D LoadTexture2D(string imageName)
     {

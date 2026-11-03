@@ -1,9 +1,9 @@
 using GorillaNetworking;
 using GorillaNetworking.Store;
 using HarmonyLib;
-using static SharpzReborn.Menu.Main;
+using static externallol.Menu.Main;
 
-namespace SharpzReborn.Patches.Internal
+namespace externallol.Patches.Internal
 {
     [HarmonyPatch(typeof(BundleManager), nameof(BundleManager.CheckIfBundlesOwned))]
     public class PostGetData

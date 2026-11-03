@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace SharpzReborn.Managers;
+namespace externallol.Managers;
 
 public class CoroutineManager : MonoBehaviour
 {

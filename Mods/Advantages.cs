@@ -2,17 +2,17 @@
 using GorillaLocomotion;
 using Photon.Pun;
 using Photon.Realtime;
-using SharpzReborn.Classes;
-using SharpzReborn.Extensions;
-using SharpzReborn.Menu;
-using SharpzReborn.Notifications;
+using externallol.Classes;
+using externallol.Extensions;
+using externallol.Menu;
+using externallol.Notifications;
 using System.Linq;
 using UnityEngine;
-using static SharpzReborn.Menu.Main;
-using static SharpzReborn.Utilities.GameModeUtilities;
-using static SharpzReborn.Utilities.RigUtilities;
+using static externallol.Menu.Main;
+using static externallol.Utilities.GameModeUtilities;
+using static externallol.Utilities.RigUtilities;
 
-namespace SharpzReborn.Mods
+namespace externallol.Mods
 {
     public class Advantages
     {

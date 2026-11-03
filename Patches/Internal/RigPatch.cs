@@ -1,6 +1,6 @@
 ﻿using HarmonyLib;
 
-namespace SharpzReborn.Patches.Internal
+namespace externallol.Patches.Internal
 {
     [HarmonyPatch(typeof(VRRig), nameof(VRRig.OnDisable))]
     public class RigDisablePatch

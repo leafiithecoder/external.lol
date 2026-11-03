@@ -1,9 +1,9 @@
-﻿using SharpzReborn.Classes;
+﻿using externallol.Classes;
 using System;
 using TMPro;
 using UnityEngine;
 
-namespace SharpzReborn.Menu;
+namespace externallol.Menu;
 
 public enum GradientAnimationMode
 {

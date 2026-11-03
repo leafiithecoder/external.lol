@@ -2,7 +2,7 @@ using GorillaTagScripts;
 using HarmonyLib;
 using System;
 
-namespace SharpzReborn.Patches.Internal
+namespace externallol.Patches.Internal
 {
     public class SubscriptionPatches
     {

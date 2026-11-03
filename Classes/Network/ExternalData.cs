@@ -1,11 +1,11 @@
-﻿using SharpzReborn.Managers;
+﻿using externallol.Managers;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 using Valve.Newtonsoft.Json.Linq;
 
-namespace SharpzReborn.Classes.Network
+namespace externallol.Classes.Network
 {
     public static class ExternalData
     {
@@ -37,7 +37,7 @@ namespace SharpzReborn.Classes.Network
 
             request.SetRequestHeader(
                 "User-Agent",
-                "SharpzReborn"
+                "externallol"
             );
 
             yield return request.SendWebRequest();

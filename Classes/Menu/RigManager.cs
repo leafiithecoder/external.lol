@@ -4,7 +4,7 @@ using Photon.Pun;
 using Photon.Realtime;
 using UnityEngine;
 
-namespace SharpzReborn.Classes
+namespace externallol.Classes
 {
     public abstract class RigManager
     {

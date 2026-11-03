@@ -1,18 +1,18 @@
 ﻿using GorillaLocomotion;
 using GorillaNetworking;
-using SharpzReborn.Classes;
-using SharpzReborn.Classes.Network;
-using SharpzReborn.Mods;
-using SharpzReborn.Notifications;
-using SharpzReborn.Patches;
-using SharpzReborn.Patches.Internal;
+using externallol.Classes;
+using externallol.Classes.Network;
+using externallol.Mods;
+using externallol.Notifications;
+using externallol.Patches;
+using externallol.Patches.Internal;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
-using static SharpzReborn.Menu.Main;
-namespace SharpzReborn.Menu
+using static externallol.Menu.Main;
+namespace externallol.Menu
 {
     // hi hi this is buttons class its sigma anyway
     // commented out mods are part of the cemetery for mods that are not in for some reason or just dont work
@@ -40,6 +40,7 @@ namespace SharpzReborn.Menu
 
                 new() { buttonText = "Menu Settings", method = () => SetCategory("Menu Settings"), mode = ButtonMode.Action, toolTip = "Opens the menu settings." },
                 new() { buttonText = "Movement Settings", method = () => SetCategory("Movement Settings"), mode = ButtonMode.Action, toolTip = "Opens the movement settings." },
+                new() { buttonText = "Advantage Settings", method = () => SetCategory("Advantage Settings"), mode = ButtonMode.Action, toolTip = "Opens the advantage settings." },
             ];
 
         private static readonly ButtonInfo[] MenuSettings =
@@ -82,6 +83,11 @@ namespace SharpzReborn.Menu
                 new() { buttonText = "Constant Noclip", enableMethod = () => constantNoclip = true, disableMethod = () => constantNoclip = false, mode = ButtonMode.Toggle, toolTip = "Keeps the noclip mod always on." },
                 new() { buttonText = "Grip Noclip", enableMethod = () => gripNoclip = true, disableMethod = () => gripNoclip = false, mode = ButtonMode.Toggle, toolTip = "Binds the noclip mod to your grip." },
             ];
+        public static ButtonInfo[] AdvantageSettings =
+        [
+            new() { buttonText = "Back", method = () => SetCategory("Settings"), mode = ButtonMode.Action, isCategory = true,toolTip = "Returns to the main settings page." },
+            new() { buttonText = "Obnoxious Tag", method = () => Main.Nothing(), mode = ButtonMode.Toggle, toolTip = "Makes Tag Mods obnoxious." }
+        ];
 
         public static ButtonInfo[] RoomMods =
         [

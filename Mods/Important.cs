@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using static SharpzReborn.Menu.Main;
+using static externallol.Menu.Main;
 
-namespace SharpzReborn.Mods
+namespace externallol.Mods
 {
     public class Important
     {

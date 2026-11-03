@@ -1,11 +1,11 @@
 ﻿using HarmonyLib;
 using Photon.Pun;
 using Photon.Realtime;
-using SharpzReborn.Managers;
-using SharpzReborn.Notifications;
+using externallol.Managers;
+using externallol.Notifications;
 using UnityEngine;
 
-namespace SharpzReborn.Patches
+namespace externallol.Patches
 {
     [HarmonyPatch(typeof(MonoBehaviourPunCallbacks), "OnPlayerLeftRoom")]
     public class LeavePatch : MonoBehaviour

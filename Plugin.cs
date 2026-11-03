@@ -1,10 +1,10 @@
 ﻿using System.ComponentModel;
 using BepInEx;
-using SharpzReborn.Classes;
-using SharpzReborn.Managers;
-using SharpzReborn.Patches;
+using externallol.Classes;
+using externallol.Managers;
+using externallol.Patches;
 
-namespace SharpzReborn;
+namespace externallol;
 
 [Description(PluginInfo.Description)]
 [BepInPlugin(

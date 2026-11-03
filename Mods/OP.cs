@@ -4,22 +4,22 @@ using GorillaLocomotion.Gameplay;
 using GorillaNetworking;
 using Photon.Pun;
 using Photon.Realtime;
-using SharpzReborn.Extensions;
-using SharpzReborn.Managers;
-using SharpzReborn.Menu;
-using SharpzReborn.Notifications;
-using SharpzReborn.Patches.Internal;
-using SharpzReborn.Utilities;
+using externallol.Extensions;
+using externallol.Managers;
+using externallol.Menu;
+using externallol.Notifications;
+using externallol.Patches.Internal;
+using externallol.Utilities;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using static SharpzReborn.Menu.Main;
+using static externallol.Menu.Main;
 using Random = UnityEngine.Random;
 using System;
 using GorillaTagScripts;
 
-namespace SharpzReborn.Mods
+namespace externallol.Mods
 {
     public class OP
     {// alot of credits to some other menus most of these methods aren't mine

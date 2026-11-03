@@ -8,9 +8,9 @@ using UnityEngine;
 using Valve.Newtonsoft.Json;
 using Valve.Newtonsoft.Json.Serialization;
 using Valve.Newtonsoft.Json.Linq;
-using static SharpzReborn.Menu.Buttons;
+using static externallol.Menu.Buttons;
 
-namespace SharpzReborn.Classes;
+namespace externallol.Classes;
 
 public static class Preferences
 {

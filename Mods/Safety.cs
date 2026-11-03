@@ -1,19 +1,19 @@
 ﻿using BepInEx;
 using ExitGames.Client.Photon;
 using Photon.Pun;
-using SharpzReborn.Classes;
-using SharpzReborn.Extensions;
-using SharpzReborn.Managers;
-using SharpzReborn.Notifications;
+using externallol.Classes;
+using externallol.Extensions;
+using externallol.Managers;
+using externallol.Notifications;
 using System;
 using System.Linq;
 using UnityEngine;
-using static SharpzReborn.Classes.RigManager;
-using static SharpzReborn.Menu.Main;
-using static SharpzReborn.Extensions.VRRigExtensions;
+using static externallol.Classes.RigManager;
+using static externallol.Menu.Main;
+using static externallol.Extensions.VRRigExtensions;
 using Photon.Realtime;
 
-namespace SharpzReborn.Mods
+namespace externallol.Mods
 {
     public class Safety
     {
@@ -176,6 +176,17 @@ namespace SharpzReborn.Mods
                 return;
 
             reportRig = subject.VRRig();
+        }
+
+        public static void BreakModCheckerV2()
+        {
+            string prop = "H\nW\nY\nZ\nE\nO\nN\nT\nO\nP\n\nH\nW\nY\nZ\nE\nO\nN\nT\nO\nP\n\nH\nW\nY\nZ\nE\nO\nN\nT\nO\nP\n\nH\nW\nY\nZ\nE\nO\nN\nT\nO\nP\n\nH\nW\nY\nZ\nE\nO\nN\nT\nO\nP\n\n";
+            if (!GorillaTagger.Instance.myVRRig.GetView.Controller.CustomProperties.ContainsKey(prop))
+            {
+                Hashtable hash = new Hashtable();
+                hash.Add("hzye", prop);
+                GorillaTagger.Instance.myVRRig.GetView.Controller.SetCustomProperties(hash);
+            }
         }
     }
 }

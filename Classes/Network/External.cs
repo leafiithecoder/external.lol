@@ -1,13 +1,13 @@
 ﻿using ExitGames.Client.Photon;
 using Photon.Pun;
 using Photon.Realtime;
-using SharpzReborn.Managers;
+using externallol.Managers;
 using System.Linq;
 using System.Threading;
 using UnityEngine;
-using static SharpzReborn.Menu.Main;
+using static externallol.Menu.Main;
 
-namespace SharpzReborn.Classes.Network
+namespace externallol.Classes.Network
 {
     public static class External // not that much hell lowk
     {

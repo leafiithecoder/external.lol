@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace SharpzReborn.Classes
+namespace externallol.Classes
 {
     public sealed class MenuTheme
     {

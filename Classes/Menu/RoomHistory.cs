@@ -1,10 +1,10 @@
-﻿using SharpzReborn.Menu;
+﻿using externallol.Menu;
 using System.Collections.Generic;
 using System.Linq;
-using static SharpzReborn.Menu.Boards;
-using static SharpzReborn.Menu.BoardType;
+using static externallol.Menu.Boards;
+using static externallol.Menu.BoardType;
 
-namespace SharpzReborn.Classes;
+namespace externallol.Classes;
 
 public class RoomHistory // hell aswell
 {

@@ -4,7 +4,7 @@ using Photon.Pun;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SharpzReborn.Utilities
+namespace externallol.Utilities
 {
     public class GameModeUtilities
     {

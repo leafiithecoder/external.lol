@@ -1,17 +1,17 @@
 ﻿using GorillaGameModes;
 using GorillaTagScripts;
 using Photon.Pun;
-using SharpzReborn.Menu;
-using SharpzReborn.Mods;
-using SharpzReborn.Utilities;
+using externallol.Menu;
+using externallol.Mods;
+using externallol.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using static SharpzReborn.Menu.Main;
-using static SharpzReborn.Utilities.GameModeUtilities;
+using static externallol.Menu.Main;
+using static externallol.Utilities.GameModeUtilities;
 
-namespace SharpzReborn.Extensions
+namespace externallol.Extensions
 {
     public static class VRRigExtensions
     {

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace SharpzReborn.Classes;
+namespace externallol.Classes;
 
 // Hey template user! Don't worry too much if you don't understand this code.
 // It may be quite complicated for a beginner.

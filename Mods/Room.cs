@@ -1,20 +1,20 @@
 ﻿using GorillaNetworking;
 using Photon.Pun;
-using SharpzReborn.Managers;
-using SharpzReborn.Notifications;
+using externallol.Managers;
+using externallol.Notifications;
 using System.Collections;
 using UnityEngine;
-using SharpzReborn.Classes;
-using SharpzReborn.Utilities;
-using static SharpzReborn.Tools.Utilities;
+using externallol.Classes;
+using externallol.Utilities;
+using static externallol.Tools.Utilities;
 
-namespace SharpzReborn.Mods
+namespace externallol.Mods
 {
     public class Room : MonoBehaviourPunCallbacks
     {
         public override void OnJoinRoomFailed(short returnCode, string message)
         {
-            Debug.Log($"Sharpz Reborn // Join failed: {returnCode} | {message}");
+            Debug.Log($"external.lol // Join failed: {returnCode} | {message}");
 
             if (returnCode == 32765)
                 NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> Room is full.");
@@ -92,7 +92,7 @@ namespace SharpzReborn.Mods
 
             if (instance == null)
             {
-                Debug.LogError("Sharpz Reborn // NetworkSystemPUN is null");
+                Debug.LogError("external.lol // NetworkSystemPUN is null");
                 yield break;
             }
 
@@ -114,11 +114,11 @@ namespace SharpzReborn.Mods
         }
         public static void QueueRoom(string roomName)
         {
-            Debug.Log("Sharpz Reborn // QueueRoom started");
+            Debug.Log("external.lol // QueueRoom started");
 
             if (CoroutineManager.Instance == null)
             {
-                Debug.LogError("Sharpz Reborn // CoroutineManager.instance is null");
+                Debug.LogError("external.lol // CoroutineManager.instance is null");
                 return;
             }
 
@@ -127,7 +127,7 @@ namespace SharpzReborn.Mods
 
             queueCoroutine = CoroutineManager.Instance.StartCoroutine(QueueRoomCoroutine(roomName));
 
-            Debug.Log("Sharpz Reborn // Queue coroutine started");
+            Debug.Log("external.lol // Queue coroutine started");
         }
 
         public static void Reconnect() // this is just copy of joinlastroom im too lazy to change it

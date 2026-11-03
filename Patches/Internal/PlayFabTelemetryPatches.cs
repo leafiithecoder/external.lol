@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using Random = UnityEngine.Random;
 
-namespace SharpzReborn.Patches.Internal
+namespace externallol.Patches.Internal
 {
     public abstract class PlayFabTelemetryPatches
     {

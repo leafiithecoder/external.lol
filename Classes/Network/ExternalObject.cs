@@ -1,10 +1,10 @@
 ﻿using Photon.Pun;
-using SharpzReborn.Classes.Network;
+using externallol.Classes.Network;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace SharpzReborn.Classes
+namespace externallol.Classes
 {
     public class ExternalObject : MonoBehaviour
     {

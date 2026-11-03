@@ -1,12 +1,12 @@
 using HarmonyLib;
 using Photon.Pun;
-using SharpzReborn.Managers;
-using SharpzReborn.Notifications;
+using externallol.Managers;
+using externallol.Notifications;
 using UnityEngine;
 using static Modio.API.ModioAPI;
-using static SharpzReborn.Patches.PatchHandler;
+using static externallol.Patches.PatchHandler;
 
-namespace SharpzReborn.Patches.Internal
+namespace externallol.Patches.Internal
 {
     public class AntiCheatPatches
     {

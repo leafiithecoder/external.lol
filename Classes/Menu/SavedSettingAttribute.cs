@@ -1,6 +1,6 @@
 using System;
 
-namespace SharpzReborn.Classes;
+namespace externallol.Classes;
 
  // Add [SavedSetting] above any static field you want saved between game restarts.
  // If the setting needs extra code to apply after loading, use:

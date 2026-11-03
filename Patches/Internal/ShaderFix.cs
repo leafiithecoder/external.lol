@@ -1,7 +1,7 @@
 ﻿using HarmonyLib;
 using UnityEngine;
 
-namespace SharpzReborn.Patches.Internal
+namespace externallol.Patches.Internal
 {
     [HarmonyPatch(typeof(GameObject), "CreatePrimitive")]
     public class ShaderFix : MonoBehaviour

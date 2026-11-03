@@ -1,6 +1,6 @@
 using UnityEngine.XR;
 
-namespace SharpzReborn.Classes
+namespace externallol.Classes
 {
     public enum GunLineStyle
     {

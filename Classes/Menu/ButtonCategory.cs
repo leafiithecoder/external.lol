@@ -1,6 +1,6 @@
 using System;
 
-namespace SharpzReborn.Classes
+namespace externallol.Classes
 {
     public sealed class ButtonCategory
     {

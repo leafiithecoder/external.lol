@@ -2,14 +2,14 @@
 using GorillaNetworking;
 using Photon.Pun;
 using Photon.Realtime;
-using SharpzReborn.Classes;
-using SharpzReborn.Classes.Network;
-using SharpzReborn.Managers;
-using SharpzReborn.Menu;
+using externallol.Classes;
+using externallol.Classes.Network;
+using externallol.Managers;
+using externallol.Menu;
 using TMPro;
 using UnityEngine;
 
-namespace SharpzReborn.Tools
+namespace externallol.Tools
 {
     public class Utilities
     {
@@ -72,7 +72,7 @@ namespace SharpzReborn.Tools
             External.Initialize();
             AdminManager.LoadWatermark();
             Boards.SetLaunchBoards();
-            Debug.Log($"SharpzReborn // Initialized {Buttons.ButtonCount} buttons.");
+            Debug.Log($"externallol // Initialized {Buttons.ButtonCount} buttons.");
 
             Debug.Log(AdminManager.banner);
 

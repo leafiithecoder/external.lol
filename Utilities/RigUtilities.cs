@@ -2,14 +2,14 @@ using Photon.Pun;
 using Photon.Realtime;
 using PlayFab;
 using PlayFab.ClientModels;
-using SharpzReborn.Extensions;
+using externallol.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-namespace SharpzReborn.Utilities
+namespace externallol.Utilities
 {
     public class RigUtilities
     {

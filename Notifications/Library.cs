@@ -4,9 +4,9 @@ using BepInEx;
 using GorillaLocomotion;
 using UnityEngine;
 using UnityEngine.UI;
-using static SharpzReborn.Menu.Settings;
+using static externallol.Menu.Settings;
 
-namespace SharpzReborn.Notifications;
+namespace externallol.Notifications;
 
 [BepInPlugin("org.gorillatag.lars.notifications2", "NotificationLibrary", "1.0.5")]
 public class NotificationManager : BaseUnityPlugin

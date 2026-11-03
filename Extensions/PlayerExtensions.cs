@@ -2,11 +2,11 @@
 using GorillaLocomotion;
 using Photon.Pun;
 using Photon.Realtime;
-using SharpzReborn.Utilities;
+using externallol.Utilities;
 using System.Linq;
 using UnityEngine;
 
-namespace SharpzReborn.Extensions
+namespace externallol.Extensions
 {
     public static class PlayerExtensions
     {

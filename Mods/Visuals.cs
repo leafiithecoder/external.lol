@@ -1,15 +1,15 @@
 ﻿using GorillaExtensions;
 using Photon.Pun;
-using SharpzReborn.Extensions;
-using SharpzReborn.Menu;
+using externallol.Extensions;
+using externallol.Menu;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
-using static SharpzReborn.Menu.Main;
+using static externallol.Menu.Main;
 
-namespace SharpzReborn.Mods
+namespace externallol.Mods
 {
     public class Visuals
     {

@@ -2,15 +2,15 @@
 using GorillaLocomotion.Swimming;
 using Photon.Pun;
 using Photon.Realtime;
-using SharpzReborn.Extensions;
-using SharpzReborn.Notifications;
+using externallol.Extensions;
+using externallol.Notifications;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
-using static SharpzReborn.Menu.Main;
+using static externallol.Menu.Main;
 
-namespace SharpzReborn.Mods
+namespace externallol.Mods
 {
     public class Fun
     {

@@ -3,7 +3,7 @@ using Photon.Pun;
 using System;
 using UnityEngine;
 
-namespace SharpzReborn.Patches.Internal
+namespace externallol.Patches.Internal
 {
     [HarmonyPatch(typeof(PhotonNetwork), nameof(PhotonNetwork.RunViewUpdate))]
     public class SerializePatch
