@@ -18,39 +18,95 @@ namespace externallol.Mods
     public class Safety
     {
         public static VRRig reportRig;
-
         public static float antiReportDelay;
+
         public static void AntiReport(Action<VRRig, Vector3> onReport)
         {
-            if (!NetworkSystem.Instance.InRoom) return;
+            if (NetworkSystem.Instance == null || !NetworkSystem.Instance.InRoom)
+            {
+                reportRig = null;
+                return;
+            }
 
             if (reportRig != null)
             {
-                onReport?.Invoke(reportRig, reportRig.transform.position);
+                VRRig detectedRig = reportRig;
                 reportRig = null;
+
+                if (detectedRig.transform != null)
+                    onReport?.Invoke(detectedRig, detectedRig.transform.position);
 
                 return;
             }
 
+            if (GorillaScoreboardTotalUpdater.allScoreboardLines == null)
+                return;
+
             foreach (GorillaPlayerScoreboardLine line in GorillaScoreboardTotalUpdater.allScoreboardLines)
             {
-                if (line.linePlayer != NetworkSystem.Instance.LocalPlayer) continue;
-                Transform report = line.reportButton.gameObject.transform;
+                if (line == null || line.linePlayer != NetworkSystem.Instance.LocalPlayer)
+                    continue;
 
-                foreach (VRRig vrrig in from vrrig in VRRigCache.m_activeRigs where !vrrig.isLocal let D1 = Vector3.Distance(vrrig.rightHandTransform.position, report.position) let D2 = Vector3.Distance(vrrig.leftHandTransform.position, report.position) where D1 < 0.35f || D2 < 0.35f select vrrig)
-                    onReport?.Invoke(vrrig, report.transform.position);
+                if (line.reportButton == null)
+                    continue;
+
+                Transform report = line.reportButton.transform;
+
+                foreach (VRRig vrrig in VRRigCache.m_activeRigs)
+                {
+                    if (vrrig == null || vrrig.isLocal)
+                        continue;
+
+                    if (vrrig.rightHandTransform == null || vrrig.leftHandTransform == null)
+                        continue;
+
+                    float rightDistance = Vector3.Distance(
+                        vrrig.rightHandTransform.position,
+                        report.position
+                    );
+
+                    float leftDistance = Vector3.Distance(
+                        vrrig.leftHandTransform.position,
+                        report.position
+                    );
+
+                    if (rightDistance < 0.35f || leftDistance < 0.35f)
+                    {
+                        onReport?.Invoke(vrrig, report.position);
+                        return;
+                    }
+                }
             }
         }
 
-        public static void AntiReportDisconnect() =>
-                AntiReport((vrrig, position) =>
-                           {
-                               NetworkSystem.Instance.ReturnToSinglePlayer();
+        public static void AntiReportDisconnect()
+        {
+            AntiReport((vrrig, position) =>
+            {
+                if (vrrig == null || vrrig.IsLocal())
+                    return;
 
-                               if (!(Time.time > antiReportDelay)) return;
-                               antiReportDelay = Time.time + 1f;
-                               NotificationManager.SendNotification($"{ModInfoNotif("ANTI-REPORT")} " + GetPlayerFromVRRig(vrrig).NickName + " attempted to report you, you have been disconnected.");
-                           });
+                if (Time.time <= antiReportDelay)
+                    return;
+
+                antiReportDelay = Time.time + 1f;
+
+                string playerName = "Unknown Player";
+
+                try
+                {
+                    playerName = GetPlayerFromVRRig(vrrig).NickName;
+                }
+                catch { }
+
+                NotificationManager.SendNotification(
+                    $"{ModInfoNotif("ANTI-REPORT")} {playerName} attempted to report you, you have been disconnected."
+                );
+
+                NetworkSystem.Instance.ReturnToSinglePlayer();
+                RPCProtection();
+            });
+        }
         public static void NoFingerMovement()
         {
             ControllerInputPoller.instance.leftControllerGripFloat = 0f;
