@@ -7,8 +7,8 @@
 <a href="https://discord.gg/wbxfF7KTF3">
   <img src="https://img.shields.io/discord/1551313051276550316?style=for-the-badge&logo=discord&logoColor=white&color=blueviolet&link=https%3A%2F%2Fdiscord.gg%2FwbxfF7KTF3" alt="Join Discord">
 </a>
-<a href="https://github.com/leafiithecoder/externallol/releases/latest/download/externallol.dll">
-  <img src="https://img.shields.io/github/downloads/leafiithecoder/externallol/latest/total?sort=date&style=for-the-badge&logo=github&logoColor=white&label=download&color=green&link=https%3A%2F%2Fgithub.com%2Fleafiithecoder%2Fexternallol%2Freleases%2Flatest%2Fdownload%2Fexternallol.dll" alt="Download">
+<a href="https://github.com/leafiithecoder/external.lol/releases/latest/download/externallol.dll">
+  <img src="https://img.shields.io/github/downloads/leafiithecoder/external.lol/latest/total?sort=date&style=for-the-badge&logo=github&logoColor=white&label=download&color=green&link=https%3A%2F%2Fgithub.com%2Fleafiithecoder%2Fexternallol%2Freleases%2Flatest%2Fdownload%2Fexternallol.dll" alt="Download">
 </a>
 
 </div>

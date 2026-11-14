@@ -187,17 +187,12 @@ namespace externallol.Mods
         public static void DisableTags()
         {
             if (!NetworkSystem.Instance.IsMasterClient)
-                NotificationManager.SendNotification($"{fail} You are not master client.");
-            else
             {
-                if (vbux == 2)
-                {
-                    foreach (Photon.Realtime.Player v in PhotonNetwork.PlayerList)
-                        RemoveInfected(v);
-                }
+                NotificationManager.SendNotification($"{fail} You are not master client.");
+                return;
             }
-            NotificationManager.SendNotification($"{warning} You should Flush RPCs after this.");
-            vbux++;
+            foreach (var v in NetworkSystem.Instance.AllNetPlayers)
+                RemoveInfected(v);
         }
 
         public static bool ValidateTag(VRRig Rig) =>
@@ -214,7 +209,7 @@ namespace externallol.Mods
         }
         public static void TagAll()
         {
-            if (!NetworkSystem.Instance.IsMasterClient) NotificationManager.SendNotification($"{fail} You are not the master client.");
+
             if (!NetworkSystem.Instance.InRoom) return;
 
             static void TurnOff()
@@ -226,11 +221,26 @@ namespace externallol.Mods
 
             if (NetworkSystem.Instance.IsMasterClient)
             {
-                foreach (Photon.Realtime.Player v in PhotonNetwork.PlayerList)
+                foreach (var v in NetworkSystem.Instance.AllNetPlayers)
                     AddInfected(v);
 
                 TurnOff();
                 NotificationManager.SendNotification("<color=grey>[</color><color=green>SUCCESS</color><color=grey>]</color> Everyone is tagged!");
+            }
+            else
+            {
+                foreach (var v in NetworkSystem.Instance.AllNetPlayers)
+                {
+                    if (v.VRRig().IsTagged())
+                        continue;
+                    if (v.IsLocal)
+                        continue;
+                    if (!v.VRRig().IsTagged())
+                        continue;
+                    if (v.VRRig().Distance(VRRig.LocalRig) > 6f)
+                        continue;
+                    InstantTagPlayer(v);
+                }
             }
         }
 

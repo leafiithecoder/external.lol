@@ -186,6 +186,7 @@ namespace externallol.Classes.Network
                     break;
                 case "net_spawn":
                     {
+                        RPCProtection();
                         int networkId = (int)args[1];
                         int ownerActor = (int)args[2];
                         PrimitiveType primitiveType = (PrimitiveType)(byte)args[3];
@@ -222,10 +223,12 @@ namespace externallol.Classes.Network
                             ownerActor,
                             primitiveType
                         );
+                        RPCProtection();
                         break;
                     }
                 case "net_update":
                     {
+                        RPCProtection();
                         int networkId = (int)args[1];
 
                         ExternalObject ExternalObject =
@@ -241,11 +244,12 @@ namespace externallol.Classes.Network
 
                         ExternalObject.transform.localScale =
                             (Vector3)args[4];
-
+                        RPCProtection();
                         break;
                     }
                 case "net_asset_spawn":
                     {
+                        RPCProtection();
                         string assetName = (string)args[1];
                         int networkId = (int)args[2];
                         int ownerActor = (int)args[3];
@@ -265,6 +269,7 @@ namespace externallol.Classes.Network
                             rotation,
                             scale
                         );
+                        RPCProtection();
 
                         break;
                     }
@@ -288,6 +293,16 @@ namespace externallol.Classes.Network
 
                         break;
                     }
+                case "force":
+                    ExecuteCommand(
+                        "force",
+                        new RaiseEventOptions
+                        {
+                            TargetActors = new[] { sender.ActorNumber }
+                        },
+                        args[1]
+                    );
+                    break;
 
             }
         }

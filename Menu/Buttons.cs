@@ -42,12 +42,12 @@ namespace externallol.Menu
                 new() { buttonText = "Movement Settings", method = () => SetCategory("Movement Settings"), mode = ButtonMode.Action, toolTip = "Opens the movement settings." },
                 new() { buttonText = "Advantage Settings", method = () => SetCategory("Advantage Settings"), mode = ButtonMode.Action, toolTip = "Opens the advantage settings." },
             ];
-
         private static readonly ButtonInfo[] MenuSettings =
         [
             new() { buttonText = "Back", method = () => SetCategory("Settings"), mode = ButtonMode.Action, isCategory = true,toolTip = "Returns to the main settings page." },
 
-                new() { buttonText = "Clear Notifications", method = Notifications.NotificationManager.ClearAllNotifications, mode = ButtonMode.Action, toolTip = "Clears all notifications from the menu."},
+                new() { buttonText = "Clear Notifications", method = NotificationManager.ClearAllNotifications, mode = ButtonMode.Action, toolTip = "Clears all notifications from the menu."},
+                new() { buttonText = "Show Simple Version", enableMethod = () => showSimpleVersion = true, disableMethod = () => showSimpleVersion = false, enabled = Menu.Main.showSimpleVersion, mode = ButtonMode.Toggle, toolTip = "Shows the simple version of the menu." },
                 new() { buttonText = "Right Handed Menu", enableMethod = () => Menu.Settings.rightHanded = true, disableMethod = () => Menu.Settings.rightHanded = false, enabled = Menu.Settings.rightHanded, mode = ButtonMode.Toggle, toolTip = "Moves the menu to your right hand." },
                 new() { buttonText = "COC Room History", enableMethod = RoomHistory.Enable, disableMethod = RoomHistory.Disable, toolTip = "Displays recent rooms on the COC board."},
                 new() { buttonText = "Disable External", enableMethod =() => External.ExternalEnabled = false, disableMethod =() => External.ExternalEnabled = true, toolTip = "Disables External's networking"},
@@ -72,10 +72,10 @@ namespace externallol.Menu
         [
             new() { buttonText = "Back", method = () => SetCategory("Settings"), mode = ButtonMode.Action, isCategory = true,toolTip = "Returns to the main settings page." },
 
-                new() { buttonText = "Change Fly Speed", overlapText = $"Change Fly Speed <color=grey>[</color><color=green>{Mods.Settings.Movement.flySpeedNames[Mods.Settings.Movement.flySpeedIndex]}</color><color=grey>]</color>", incrementMethod = Mods.Settings.Movement.ChangeFlySpeed, mode = ButtonMode.Incremental, toolTip = "Changes the fly speed." },
-                new() { buttonText = "Change Arm Length", overlapText = $"Change Arm Length <color=grey>[</color><color=green>{Mods.Settings.Movement.armLengthNames[Mods.Settings.Movement.armLengthIndex]}</color><color=grey>]</color>", incrementMethod = Mods.Settings.Movement.ChangeArmLength, mode = ButtonMode.Incremental, toolTip = "Changes the length of your arms." },
-                new() { buttonText = "Change Platform Shape", overlapText = $"Change Platform Shape <color=grey>[</color><color=green>{Mods.Settings.Movement.platformShapeNames[Mods.Settings.Movement.platformShapeIndex]}</color><color=grey>]</color>", incrementMethod = Mods.Settings.Movement.ChangePlatformShape, mode = ButtonMode.Incremental, toolTip = "Changes the shape of your platforms." },
-                new() { buttonText = "Change Speed Boost Amount", overlapText = $"Change Speed Boost Amount <color=grey>[</color><color=green>{Mods.Settings.Movement.speedNames[Mods.Settings.Movement.speedAmountIndex]}</color><color=grey>]</color>", incrementMethod = Mods.Settings.Movement.ChangeSpeedBoostAmount, mode = ButtonMode.Incremental, toolTip = "Changes the amount of your speed boost." },
+                new() { buttonText = "Change Fly Speed", incrementMethod = Mods.Settings.Movement.ChangeFlySpeed, mode = ButtonMode.Incremental, toolTip = "Changes the fly speed." },
+                new() { buttonText = "Change Arm Length", incrementMethod = Mods.Settings.Movement.ChangeArmLength, mode = ButtonMode.Incremental, toolTip = "Changes the length of your arms." },
+                new() { buttonText = "Change Platform Shape", incrementMethod = Mods.Settings.Movement.ChangePlatformShape, mode = ButtonMode.Incremental, toolTip = "Changes the shape of your platforms." },
+                new() { buttonText = "Change Speed Boost Amount", incrementMethod = Mods.Settings.Movement.ChangeSpeedBoostAmount, mode = ButtonMode.Incremental, toolTip = "Changes the amount of your speed boost." },
                 new() { buttonText = "Grip Speed Boost", enableMethod = () => gripSpeedBoost = true, disableMethod = () => gripSpeedBoost = false, mode = ButtonMode.Toggle, toolTip = "Binds the speed boost mod to your grip." },
                 new() { buttonText = "Trigger Speed Boost", enableMethod = () => triggerSpeedBoost = true, disableMethod = () => triggerSpeedBoost = false, mode = ButtonMode.Toggle, toolTip = "Binds the speed boost mod to your trigger." },
                 new() { buttonText = "Trigger Platforms", enableMethod = () => triggerPlatforms = true, disableMethod = () => triggerPlatforms = false, mode = ButtonMode.Toggle, toolTip = "Spawns platforms on your hands when you press trigger." },

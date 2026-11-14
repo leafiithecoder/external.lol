@@ -1,9 +1,10 @@
-﻿using static externallol.Menu.Main;
+﻿using GorillaLocomotion;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using static externallol.Menu.Main;
 
 namespace externallol.Mods
 {
@@ -211,18 +212,202 @@ namespace externallol.Mods
             else
                 VRRig.LocalRig.head.trackingRotationOffset.x = Mathf.Lerp(VRRig.LocalRig.head.trackingRotationOffset.x, 0f, 0.1f);
         }
-        public static void Helicopter()
+
+        public static Vector3 offsetLH = Vector3.zero;
+        public static Vector3 offsetRH = Vector3.zero;
+        public static Vector3 offsetH = Vector3.zero;
+        public static void EnableSpazRig()
         {
-            if (ControllerInputPoller.instance.rightControllerIndexFloat > .5)
+            ghostException = true;
+            offsetLH = VRRig.LocalRig.leftHand.trackingPositionOffset;
+            offsetRH = VRRig.LocalRig.rightHand.trackingPositionOffset;
+            offsetH = VRRig.LocalRig.head.trackingPositionOffset;
+        }
+
+        public static void SpazRig()
+        {
+            if (rightPrimary)
+            {
+                float spazAmount = 0.1f;
+                ghostException = true;
+                VRRig.LocalRig.leftHand.trackingPositionOffset = offsetLH + RandomVector3(spazAmount);
+                VRRig.LocalRig.rightHand.trackingPositionOffset = offsetRH + RandomVector3(spazAmount);
+                VRRig.LocalRig.head.trackingPositionOffset = offsetH + RandomVector3(spazAmount);
+            }
+            else
+            {
+                ghostException = false;
+                VRRig.LocalRig.leftHand.trackingPositionOffset = offsetLH;
+                VRRig.LocalRig.rightHand.trackingPositionOffset = offsetRH;
+                VRRig.LocalRig.head.trackingPositionOffset = offsetH;
+            }
+        }
+
+        public static void DisableSpazRig()
+        {
+            ghostException = false;
+            VRRig.LocalRig.leftHand.trackingPositionOffset = offsetLH;
+            VRRig.LocalRig.rightHand.trackingPositionOffset = offsetRH;
+            VRRig.LocalRig.head.trackingPositionOffset = offsetH;
+        }
+
+        public static void SpazHands()
+        {
+            if (rightPrimary)
             {
                 VRRig.LocalRig.enabled = false;
-                GorillaTagger.Instance.offlineVRRig.rightHandTransform.position = Camera.main.transform.position + Camera.main.transform.right * 2;
-                GorillaTagger.Instance.offlineVRRig.leftHandTransform.position = Camera.main.transform.position - Camera.main.transform.right * 2;
-                VRRig.LocalRig.transform.Rotate(new Vector3(0, 2.5f, 0));
-                VRRig.LocalRig.transform.position += new Vector3(0, 0.01f, 0);
+
+                VRRig.LocalRig.transform.position = GorillaTagger.Instance.bodyCollider.transform.position + new Vector3(0f, 0.15f, 0f);
+                VRRig.LocalRig.transform.rotation = GorillaTagger.Instance.bodyCollider.transform.rotation;
+
+                VRRig.LocalRig.head.rigTarget.transform.rotation = GorillaTagger.Instance.headCollider.transform.rotation;
+
+                VRRig.LocalRig.leftHand.rigTarget.transform.rotation = RandomQuaternion();
+                VRRig.LocalRig.rightHand.rigTarget.transform.rotation = RandomQuaternion();
+
+                VRRig.LocalRig.leftHand.rigTarget.transform.position = GorillaTagger.Instance.leftHandTransform.position + VRRig.LocalRig.leftHand.rigTarget.transform.forward * 3f;
+                VRRig.LocalRig.rightHand.rigTarget.transform.position = GorillaTagger.Instance.rightHandTransform.position + VRRig.LocalRig.rightHand.rigTarget.transform.forward * 3f;
             }
             else
                 VRRig.LocalRig.enabled = true;
+        }
+
+        public static void SpazRealHands()
+        {
+            if (rightPrimary)
+            {
+                GTPlayer.Instance.GetControllerTransform(true).rotation = RandomQuaternion();
+                GTPlayer.Instance.GetControllerTransform(true).position = GorillaTagger.Instance.leftHandTransform.position + GTPlayer.Instance.GetControllerTransform(true).forward * 3f;
+
+                GTPlayer.Instance.GetControllerTransform(false).rotation = RandomQuaternion();
+                GTPlayer.Instance.GetControllerTransform(false).position = GorillaTagger.Instance.rightHandTransform.position + GTPlayer.Instance.GetControllerTransform(false).forward * 3f;
+            }
+            else
+                VRRig.LocalRig.enabled = true;
+        }
+
+        public static void FixRigHandRotation()
+        {
+            VRRig.LocalRig.leftHand.rigTarget.transform.rotation *= Quaternion.Euler(VRRig.LocalRig.leftHand.trackingRotationOffset);
+            VRRig.LocalRig.rightHand.rigTarget.transform.rotation *= Quaternion.Euler(VRRig.LocalRig.rightHand.trackingRotationOffset);
+        }
+
+        public static void AutoTPose()
+        {
+            if (rightPrimary)
+            {
+                VRRig.LocalRig.enabled = false;
+
+                VRRig.LocalRig.transform.position = GorillaTagger.Instance.bodyCollider.transform.position + new Vector3(0f, 0.15f, 0f);
+                VRRig.LocalRig.transform.rotation = GorillaTagger.Instance.bodyCollider.transform.rotation;
+
+                VRRig.LocalRig.head.rigTarget.transform.rotation = GorillaTagger.Instance.bodyCollider.transform.rotation;
+
+                VRRig.LocalRig.leftHand.rigTarget.transform.position = VRRig.LocalRig.transform.position + VRRig.LocalRig.transform.right * -1f;
+                VRRig.LocalRig.rightHand.rigTarget.transform.position = VRRig.LocalRig.transform.position + VRRig.LocalRig.transform.right * 1f;
+
+                VRRig.LocalRig.leftHand.rigTarget.transform.rotation = VRRig.LocalRig.transform.rotation;
+                VRRig.LocalRig.rightHand.rigTarget.transform.rotation = VRRig.LocalRig.transform.rotation;
+
+                FixRigHandRotation();
+            }
+            else
+                VRRig.LocalRig.enabled = true;
+        }
+
+        public static void RigGun()
+        {
+            if (GetGunInput(false))
+            {
+                var GunData = RenderGun();
+                GameObject NewPointer = GunData.NewPointer;
+
+                if (GetGunInput(true))
+                {
+                    VRRig.LocalRig.enabled = false;
+                    VRRig.LocalRig.transform.position = NewPointer.transform.position + new Vector3(0, 1, 0);
+                }
+                else
+                    VRRig.LocalRig.enabled = true;
+            }
+        }
+
+        public static void Helicopter()
+        {
+            if (rightPrimary)
+            {
+                VRRig.LocalRig.enabled = false;
+
+                VRRig.LocalRig.transform.position += new Vector3(0f, 0.05f, 0f);
+                VRRig.LocalRig.transform.rotation = Quaternion.Euler(VRRig.LocalRig.transform.rotation.eulerAngles + new Vector3(0f, 10f, 0f));
+
+                VRRig.LocalRig.head.rigTarget.transform.rotation = VRRig.LocalRig.transform.rotation;
+
+                VRRig.LocalRig.leftHand.rigTarget.transform.position = VRRig.LocalRig.transform.position + VRRig.LocalRig.transform.right * -1f;
+                VRRig.LocalRig.rightHand.rigTarget.transform.position = VRRig.LocalRig.transform.position + VRRig.LocalRig.transform.right * 1f;
+
+                VRRig.LocalRig.leftHand.rigTarget.transform.rotation = VRRig.LocalRig.transform.rotation;
+                VRRig.LocalRig.rightHand.rigTarget.transform.rotation = VRRig.LocalRig.transform.rotation;
+
+                FixRigHandRotation();
+            }
+            else
+                VRRig.LocalRig.enabled = true;
+        }
+
+        public static void Fan()
+        {
+            if (rightPrimary)
+            {
+                VRRig.LocalRig.enabled = false;
+
+                VRRig.LocalRig.transform.position = GorillaTagger.Instance.bodyCollider.transform.position + new Vector3(0f, 0.15f, 0f);
+                VRRig.LocalRig.transform.rotation = GorillaTagger.Instance.bodyCollider.transform.rotation;
+
+                VRRig.LocalRig.head.rigTarget.transform.rotation = VRRig.LocalRig.transform.rotation;
+
+                VRRig.LocalRig.leftHand.rigTarget.transform.position = VRRig.LocalRig.transform.position + (VRRig.LocalRig.transform.up * (Mathf.Cos(Time.time * 15f) * 2f) + VRRig.LocalRig.transform.right * (Mathf.Sin(Time.time * 15f) * 2f));
+                VRRig.LocalRig.rightHand.rigTarget.transform.position = VRRig.LocalRig.transform.position - (VRRig.LocalRig.transform.up * (Mathf.Cos(Time.time * 15f) * 2f) + VRRig.LocalRig.transform.right * (Mathf.Sin(Time.time * 15f) * 2f));
+
+                VRRig.LocalRig.leftHand.rigTarget.transform.rotation = VRRig.LocalRig.transform.rotation;
+                VRRig.LocalRig.rightHand.rigTarget.transform.rotation = VRRig.LocalRig.transform.rotation;
+
+                FixRigHandRotation();
+            }
+            else
+                VRRig.LocalRig.enabled = true;
+        }
+
+        public static void MinecraftAnimations()
+        {
+            VRRig.LocalRig.enabled = false;
+
+            VRRig.LocalRig.transform.position = GorillaTagger.Instance.bodyCollider.transform.position + new Vector3(0f, 0.15f, 0f);
+            VRRig.LocalRig.transform.rotation = GorillaTagger.Instance.bodyCollider.transform.rotation;
+
+            VRRig.LocalRig.head.rigTarget.transform.rotation = GorillaTagger.Instance.bodyCollider.transform.rotation;
+
+            VRRig.LocalRig.leftHand.rigTarget.transform.rotation = GorillaTagger.Instance.bodyCollider.transform.rotation;
+            VRRig.LocalRig.rightHand.rigTarget.transform.rotation = GorillaTagger.Instance.bodyCollider.transform.rotation;
+
+            if (rightPrimary)
+            {
+                VRRig.LocalRig.leftHand.rigTarget.transform.position = GorillaTagger.Instance.bodyCollider.transform.position + GorillaTagger.Instance.bodyCollider.transform.right * -0.25f + GorillaTagger.Instance.bodyCollider.transform.up * -1f + GorillaTagger.Instance.bodyCollider.transform.forward * Mathf.Sin(Time.frameCount / 10f);
+                VRRig.LocalRig.rightHand.rigTarget.transform.position = GorillaTagger.Instance.bodyCollider.transform.position + GorillaTagger.Instance.bodyCollider.transform.right * 0.25f + GorillaTagger.Instance.bodyCollider.transform.up * -1f + -(GorillaTagger.Instance.bodyCollider.transform.forward * Mathf.Sin(Time.frameCount / 10f));
+            }
+            else
+            {
+                VRRig.LocalRig.leftHand.rigTarget.transform.position = GorillaTagger.Instance.bodyCollider.transform.position + GorillaTagger.Instance.bodyCollider.transform.right * -0.25f + GorillaTagger.Instance.bodyCollider.transform.up * -1f;
+                VRRig.LocalRig.rightHand.rigTarget.transform.position = GorillaTagger.Instance.bodyCollider.transform.position + GorillaTagger.Instance.bodyCollider.transform.right * 0.25f + GorillaTagger.Instance.bodyCollider.transform.up * -1f;
+            }
+
+            if (rightSecondary)
+            {
+                VRRig.LocalRig.rightHand.rigTarget.transform.position = GorillaTagger.Instance.bodyCollider.transform.position + GorillaTagger.Instance.bodyCollider.transform.right * 0.25f + Vector3.Lerp(GorillaTagger.Instance.rightHandTransform.forward, -GorillaTagger.Instance.rightHandTransform.up, 0.5f) * 2f;
+                VRRig.LocalRig.rightHand.rigTarget.transform.rotation = GorillaTagger.Instance.rightHandTransform.rotation;
+            }
+
+            FixRigHandRotation();
         }
     }
 }

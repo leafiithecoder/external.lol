@@ -1,13 +1,14 @@
+using BepInEx;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using BepInEx;
+using System.Text;
 using UnityEngine;
 using Valve.Newtonsoft.Json;
-using Valve.Newtonsoft.Json.Serialization;
 using Valve.Newtonsoft.Json.Linq;
+using Valve.Newtonsoft.Json.Serialization;
 using static externallol.Menu.Buttons;
 
 namespace externallol.Classes;
@@ -37,6 +38,9 @@ public static class Preferences
 
     private static bool loaded;
     private static bool buttonStatesApplied;
+
+    public static bool useBase64Encoding = true; // this does NOTHING you CANNOT stop me from being so evil muahahha *evil laugh*
+
 
     public static void Load()
     {
@@ -105,10 +109,8 @@ public static class Preferences
             SaveSettings(data);
             SaveButtons(data);
 
-            string json =
-                    JsonConvert.SerializeObject(
-                            data,
-                            Formatting.Indented);
+            string json = JsonConvert.SerializeObject(data, Formatting.Indented);
+            string encoded = Convert.ToBase64String(Encoding.UTF8.GetBytes(json));
 
             string directory =
                     Path.GetDirectoryName(
@@ -119,7 +121,7 @@ public static class Preferences
 
             File.WriteAllText(
                     SavePath,
-                    json);
+                    encoded);
 
             loadedData = data;
             legacyData = null;
@@ -130,7 +132,7 @@ public static class Preferences
                     $"{PluginInfo.Name} // Failed to save preferences: {exc}");
         }
     }
-
+    // i made it Base64 encoded for no fucking reason, but it makes the file look less unprofessional, so i guess it was worth it. also, it makes it harder for people to edit the file and break things, which is a plus.
     private static SaveData LoadFile()
     {
         if (!File.Exists(SavePath))
@@ -138,9 +140,19 @@ public static class Preferences
 
         try
         {
-            string json =
-                    File.ReadAllText(
-                            SavePath);
+            string encoded = File.ReadAllText(SavePath);
+            string json;
+
+            try
+            {
+                json = Encoding.UTF8.GetString(
+                        Convert.FromBase64String(encoded));
+            }
+            catch (FormatException)
+            {
+                
+                json = encoded;
+            }
 
             JObject root =
                     JObject.Parse(json);

@@ -42,7 +42,7 @@ public class Main : MonoBehaviour
     public static void OnLaunch()
     {
         // Room
-        GameObject roomObject = new GameObject("SR_RoomClass");
+        GameObject roomObject = new GameObject("room_mods_node");
         roomObject.AddComponent<Mods.Room>();
         ServerSyncPos = VRRig.LocalRig?.transform.position ?? ServerSyncPos;
         IsSteam = PlayFabAuthenticator.instance.platform;
@@ -84,6 +84,8 @@ public class Main : MonoBehaviour
     private static bool menuShouldDropOnClose;
     private static bool searchKeyboardFollowing;
     public static bool showLocalAdminIcon;
+    public static bool showSimpleVersion;
+    public static bool ghostException;
 
     // Strings
     public static string CosmeticsOwned;
@@ -116,6 +118,8 @@ public class Main : MonoBehaviour
     public static Vector2 rightJoystick = Vector2.zero;
     public static bool leftJoystickClick;
     public static bool rightJoystickClick;
+    public static Transform lHand;
+    public static Transform rHand;
 
     // VRRigs
     public static VRRig GhostRig;
@@ -131,8 +135,6 @@ public class Main : MonoBehaviour
     private static LineRenderer GunLine;
     private static ButtonCategory currentCategory;
     private static ButtonInfo[] searchResults = Array.Empty<ButtonInfo>();
-    public static Transform lHand = GorillaTagger.Instance.leftHandTransform;
-    public static Transform rHand = GorillaTagger.Instance.rightHandTransform;
 
     // Important
 
@@ -241,11 +243,14 @@ public class Main : MonoBehaviour
             rightTrigger = ControllerInputPoller.instance.rightControllerIndexFloat;
             leftTriggerPressed = ControllerInputPoller.instance.leftIndexPressed;
             rightTriggerPressed = ControllerInputPoller.instance.rightIndexPressed;
+            lHand = GorillaTagger.Instance.leftHandTransform;
+            rHand = GorillaTagger.Instance.rightHandTransform;
             susPC = !XRSettings.isDeviceActive;
 
             ServerPos = ServerPos == Vector3.zero ? ServerSyncPos : Vector3.Lerp(ServerPos, VRRig.LocalRig.SanitizeVector3(ServerSyncPos), VRRig.LocalRig.lerpValueBody * 0.66f);
             ServerLeftHandPos = ServerLeftHandPos == Vector3.zero ? ServerSyncLeftHandPos : Vector3.Lerp(ServerLeftHandPos, VRRig.LocalRig.SanitizeVector3(ServerSyncLeftHandPos), VRRig.LocalRig.lerpValueBody);
             ServerRightHandPos = ServerRightHandPos == Vector3.zero ? ServerSyncRightHandPos : Vector3.Lerp(ServerRightHandPos, VRRig.LocalRig.SanitizeVector3(ServerSyncRightHandPos), VRRig.LocalRig.lerpValueBody);
+            
 
             if (IsSteam)
             {
@@ -329,6 +334,8 @@ public class Main : MonoBehaviour
             Debug.LogError(
                     $"{PluginInfo.Name} // Error initializing at {exc.StackTrace}: {exc.Message}");
         }
+
+        // up to date 
 
         try
         {
@@ -514,6 +521,7 @@ public class Main : MonoBehaviour
 
         titleText.text =
                 PluginInfo.Name                        +
+                $" {PluginInfo.UseSimpleVersion()}" +
                 " <color=grey>[</color><color=white>" +
                 (pageNumber + 1)                      +
                 "</color><color=grey>]</color>";

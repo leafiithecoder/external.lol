@@ -672,4 +672,110 @@ public abstract class Movement
             ZeroGravity();
         }
     }
+
+    public static void LegitimateWallWalk()
+    {
+        float range = 0.2f;
+        float power = -2f;
+        bool wallWalkKey = rightGrab || leftGrab;
+
+        if (wallWalkKey)
+        {
+            RaycastHit ray = GTPlayer.Instance.lastHitInfoHand;
+
+            if (Physics.Raycast(TrueLeftHand().position, -ray.normal, out var Ray, range, GTPlayer.Instance.locomotionEnabledLayers))
+                GorillaTagger.Instance.rigidbody.AddForce(Ray.normal * power, ForceMode.Acceleration);
+        }
+
+        if (wallWalkKey)
+        {
+            RaycastHit ray = GTPlayer.Instance.lastHitInfoHand;
+
+            if (Physics.Raycast(TrueRightHand().position, -ray.normal, out var Ray, range, GTPlayer.Instance.locomotionEnabledLayers))
+                GorillaTagger.Instance.rigidbody.AddForce(Ray.normal * power, ForceMode.Acceleration);
+        }
+    }
+    public static void Airstrike()
+    {
+        if (GetGunInput(false))
+        {
+            var GunData = RenderGun();
+            GameObject NewPointer = GunData.NewPointer;
+
+            if (GetGunInput(true) && !previousTeleportTrigger)
+            {
+                GorillaTagger.Instance.rigidbody.linearVelocity = new Vector3(0f, -20f, 0f);
+                TeleportPlayer(NewPointer.transform.position + new Vector3(0f, 30f, 0f));
+                GorillaTagger.Instance.rigidbody.linearVelocity = new Vector3(0f, -20f, 0f);
+            }
+
+            previousTeleportTrigger = GetGunInput(true);
+        }
+    }
+
+    public static GameObject CheckPoint;
+    public static void Checkpoint()
+    {
+        if (rightGrab)
+        {
+            if (CheckPoint == null)
+            {
+                CheckPoint = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                Object.Destroy(CheckPoint.GetComponent<SphereCollider>());
+                CheckPoint.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
+            }
+            CheckPoint.transform.position = GorillaTagger.Instance.rightHandTransform.position;
+        }
+        if (CheckPoint != null)
+        {
+            if (rightPrimary)
+            {
+                CheckPoint.GetComponent<Renderer>().material.color = Color.white;
+                TeleportPlayer(CheckPoint.transform.position);
+                GorillaTagger.Instance.rigidbody.linearVelocity = Vector3.zero;
+            }
+            else
+                CheckPoint.GetComponent<Renderer>().material.color = Color.white;
+        }
+    }
+
+    public static void DisableCheckpoint()
+    {
+        if (CheckPoint != null)
+        {
+            Object.Destroy(CheckPoint);
+            CheckPoint = null;
+        }
+    }
+
+    private static float pullPower = 0.1f;
+    private static readonly Dictionary<bool, bool> previousTouchingGround = new Dictionary<bool, bool>();
+    public static void ProcessPullHand(bool left)
+    {
+        if ((left ? !leftGrab : !rightGrab))
+            return;
+
+        bool touchingGround = GTPlayer.Instance.IsHandTouching(left);
+        previousTouchingGround.TryGetValue(left, out bool wasTouchingGround);
+
+        if (!touchingGround && wasTouchingGround)
+        {
+            Vector3 normal = GTPlayer.Instance.lastHitInfoHand.normal;
+            Vector3 direction = GorillaTagger.Instance.rigidbody.linearVelocity.X_Z();
+            GTPlayer.Instance.transform.position += (direction - normal * Vector3.Dot(direction, normal)).normalized * (direction.magnitude / GTPlayer.Instance.maxJumpSpeed * (pullPower * 5f)) * 1f;
+        }
+
+        previousTouchingGround[left] = touchingGround;
+    }
+
+    public static void PullMod()
+    {
+        if (!leftGrab && !rightGrab)
+        {
+            previousTouchingGround.Clear();
+            return;
+        }
+        ProcessPullHand(false);
+        ProcessPullHand(true);
+    }
 }

@@ -1,4 +1,6 @@
-﻿namespace externallol
+﻿using System.Linq;
+
+namespace externallol
 {
     public abstract class PluginInfo
     {
@@ -9,5 +11,13 @@
         public const string SimpleVersion = "v17";
 
 		public const string ExternalVersion = "1.4.1";
+
+        public static string UseSimpleVersion()
+        {
+            if (Menu.Main.showSimpleVersion)
+                return SimpleVersion;
+            else
+                return string.Empty;
+        }
     }
 }
