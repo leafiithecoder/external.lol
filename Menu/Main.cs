@@ -34,9 +34,9 @@ public class Main : MonoBehaviour
     /*
      * credits to ii's stupid menu or something
      * 
+     * 
      * log:
-     * maybe fixed tag mods idk
-     * trigger plats fixed
+     * nothing i guess
      */
 
     public static void OnLaunch()
@@ -2849,11 +2849,12 @@ public class Main : MonoBehaviour
         return hit.collider != null;
     }
 
+
     private static void RenderGunLine(
-            Vector3     startPosition,
-            Vector3     endPosition,
-            Transform   gunTransform,
-            GunSettings settings)
+        Vector3 startPosition,
+        Vector3 endPosition,
+        Transform gunTransform,
+        GunSettings settings)
     {
         if (settings.lineStyle == GunLineStyle.Straight)
         {
@@ -2872,18 +2873,18 @@ public class Main : MonoBehaviour
         if (settings.lineStyle == GunLineStyle.Curve)
         {
             Vector3 controlPoint =
-                    Vector3.Lerp(startPosition, endPosition, 0.5f) +
-                    gunTransform.up * settings.curveAmount;
+                Vector3.Lerp(startPosition, endPosition, 0.5f) +
+                gunTransform.up * settings.curveAmount;
 
             for (int i = 0; i < quality; i++)
             {
-                float t        = i / (float)(quality - 1);
+                float t = i / (float)(quality - 1);
                 float inverseT = 1f - t;
 
                 Vector3 position =
-                        inverseT * inverseT * startPosition    +
-                        2f       * inverseT * t * controlPoint +
-                        t        * t        * endPosition;
+                    inverseT * inverseT * startPosition +
+                    2f * inverseT * t * controlPoint +
+                    t * t * endPosition;
 
                 GunLine.SetPosition(i, position);
             }
@@ -2894,33 +2895,71 @@ public class Main : MonoBehaviour
         Vector3 lineDirection = endPosition - startPosition;
 
         Vector3 waveAxis = Vector3.Cross(
-                lineDirection.normalized,
-                gunTransform.up);
+            lineDirection.normalized,
+            gunTransform.up
+        );
 
         if (waveAxis.sqrMagnitude < 0.001f)
             waveAxis = gunTransform.right;
 
         waveAxis.Normalize();
 
+        float amount = settings.waveAmount;
+        float frequency = settings.waveFrequency;
+
         for (int i = 0; i < quality; i++)
         {
             float t = i / (float)(quality - 1);
+            float phase = t * Mathf.PI * 2f * frequency;
 
             Vector3 position = Vector3.Lerp(
-                    startPosition,
-                    endPosition,
-                    t);
+                startPosition,
+                endPosition,
+                t
+            );
 
             float edgeFade = Mathf.Sin(t * Mathf.PI);
+            float offset = 0f;
 
-            float wave =
-                    Mathf.Sin(
-                            t         * Mathf.PI * 2f * settings.waveFrequency +
-                            Time.time * 8f) *
-                    settings.waveAmount     *
-                    edgeFade;
+            switch (settings.lineStyle)
+            {
+                case GunLineStyle.Wave:
+                    {
+                        offset = Mathf.Sin(phase) * amount;
+                        break;
+                    }
 
-            position += waveAxis * wave;
+                case GunLineStyle.Boxy:
+                    {
+                        offset = Mathf.Sign(Mathf.Sin(phase)) * amount;
+                        break;
+                    }
+
+                case GunLineStyle.Zigzag:
+                    {
+                        float triangle = 2f / Mathf.PI *
+                            Mathf.Asin(Mathf.Sin(phase));
+
+                        offset = triangle * amount;
+                        break;
+                    }
+
+                case GunLineStyle.Electric:
+                    {
+                        float seed = i * 127.1f +
+                            Mathf.Floor(Time.time * 18f) * 311.7f;
+
+                        float random = Mathf.Repeat(
+                            Mathf.Sin(seed) * 43758.5453f,
+                            1f
+                        );
+
+                        offset = (random * 2f - 1f) * amount;
+                        break;
+                    }
+            }
+
+            position += waveAxis * (offset * edgeFade);
 
             GunLine.SetPosition(i, position);
         }

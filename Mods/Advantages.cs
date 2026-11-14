@@ -124,7 +124,12 @@ namespace externallol.Mods
                     if (gunTarget && !gunTarget.IsLocal())
                     {
                         if (PhotonNetwork.IsMasterClient)
-                            AddInfected(GetPlayerFromVRRig(gunTarget));
+                        {
+                            //AddInfected(GetPlayerFromVRRig(gunTarget)); <- detected :sads: rip old tag gun method for skidders
+                            if (!VRRig.LocalRig.IsTagged()) return;
+                            gunLocked = true;
+                            lockTarget = gunTarget;
+                        }
                         else
                         {
                             if (!VRRig.LocalRig.IsTagged()) return;

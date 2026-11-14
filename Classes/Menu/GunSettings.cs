@@ -7,6 +7,9 @@ namespace externallol.Classes
         Straight,
         Curve,
         Wave,
+        Boxy,
+        Zigzag,
+        Electric,
     }
 
     public class GunSettings

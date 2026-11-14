@@ -62,6 +62,7 @@ namespace externallol.Menu
                 new() { buttonText = "Gradient Animation", incrementMethod = Menu.Settings.ChangeGradientAnimation, displayText = () => $"Gradient Animation <color=grey>[</color><color=green>{Menu.Settings.GradientAnimationName}</color><color=grey>]</color>", mode = ButtonMode.Incremental, toolTip = "Changes how the animated gradients move." },
                 new() { buttonText = "Rainbow Colours", enableMethod = () => Menu.Settings.SetRainbowColors(true), disableMethod = () => Menu.Settings.SetRainbowColors(false), enabled = Menu.Settings.rainbowColors, mode = ButtonMode.Toggle, toolTip = "Uses animated rainbow colours instead of the selected colour scheme." },
                 new() { buttonText = "Theme Changer", incrementMethod = Menu.Settings.ChangeTheme, displayText = () => $"Theme Changer <color=grey>[</color><color=green>{Menu.Settings.ThemeName}</color><color=grey>]</color>", mode = ButtonMode.Incremental, toolTip = "Changes the color scheme used by the menu." },
+                new() { buttonText = "Change Gun Style", incrementMethod = Menu.Settings.ChangeGunStyle, displayText = () => $"Change Gun Style <color=grey>[</color><color=green>{Menu.Settings.GunStyleName}</color><color=grey>]</color>", mode = ButtonMode.Incremental, toolTip = "Changes the appearance of gun lines." },
                 new() { buttonText = "Outlines", enableMethod = () => Menu.Settings.outlines = true, disableMethod = () => Menu.Settings.outlines = false, enabled = Menu.Settings.outlines, mode = ButtonMode.Toggle, toolTip = "Adds outlines around the menu and its buttons." },
                 new() { buttonText = "Button Gradients", enableMethod = () => Menu.Settings.buttonGradients = true, disableMethod = () => Menu.Settings.buttonGradients = false, enabled = Menu.Settings.buttonGradients, mode = ButtonMode.Toggle, toolTip = "Toggles spatial gradients on buttons." },
                 new() { buttonText = "Vertical Gradients", enableMethod = () => Menu.Settings.verticalButtonGradients = true, disableMethod = () => Menu.Settings.verticalButtonGradients = false, enabled = Menu.Settings.verticalButtonGradients, mode = ButtonMode.Toggle, toolTip = "Switches button gradients between horizontal and vertical." },
@@ -137,6 +138,7 @@ namespace externallol.Menu
             new() { buttonText = "Exit Movement Mods", method = () => SetCategory("Main"), mode = ButtonMode.Action, isCategory = true,toolTip = "Returns to the main menu page." },
 
                 new() { buttonText = "Platforms <color=grey>[</color><color=green>G</color><color=grey>]</color>", method = Movement.Platforms, mode = ButtonMode.Toggle, toolTip = "Spawns platforms on your hands when you press grip." },
+                new() { buttonText = "Platform Gun", method = Movement.PlatformGun, mode = ButtonMode.Toggle, toolTip = "Spawns platforms at your gun's pointer." },
                 new() { buttonText = "Frozone <color=grey>[</color><color=green>G</color><color=grey>]</color>", method = Movement.Frozone, toolTip = "Spawns slippery blocks under your hands using <color=green>grip</color>."},
                 new() { buttonText = "Fly <color=grey>[</color><color=green>A</color><color=grey>]</color>", method = Movement.Fly, mode = ButtonMode.Toggle, toolTip = "Moves you forward while holding A." },
                 new() { buttonText = "Hand Fly <color=grey>[</color><color=green>A</color><color=grey>]</color>", method = Movement.HandFly, mode = ButtonMode.Toggle, toolTip = "Moves you forward in the direction your hand is pointing while holding A." },
@@ -160,6 +162,10 @@ namespace externallol.Menu
                 new() { buttonText = "Force Tag Freeze", method = Movement.ForceTagFreeze, mode = ButtonMode.Toggle, toolTip = "Forces tag freeze." },
                 new() { buttonText = "No Tag Freeze", method = Movement.NoTagFreeze, mode = ButtonMode.Toggle, toolTip = "Removes tag freeze." },
                 new() { buttonText = "Wall Walk <color=grey>[</color><color=green>G</color><color=grey>]</color>", method = Movement.WallWalk, mode = ButtonMode.Toggle, toolTip = "Allows you to walk on walls." },
+                new() { buttonText = "Legitimate Wall Walk", method = Movement.LegitimateWallWalk, mode = ButtonMode.Toggle, toolTip = "Allows you to walk on walls." },
+                new() { buttonText = "Airstrike", method = Movement.Airstrike, mode = ButtonMode.Toggle, toolTip = "Makes you become an airstrike." },
+                new() { buttonText = "Checkpoint", method = Movement.Checkpoint, disableMethod = Movement.DisableCheckpoint, mode = ButtonMode.Toggle, toolTip = "Allows you to place and return to a checkpoint." },
+                new() { buttonText = "Pull Mod", method = Movement.PullMod, mode = ButtonMode.Toggle, toolTip = "Pulls you forward when running." },
             ];
 
         public static ButtonInfo[] SafetyMods =
@@ -201,6 +207,7 @@ namespace externallol.Menu
             new() { buttonText = "Exit Player Mods", method = () => SetCategory("Main"), mode = ButtonMode.Action, toolTip = "Returns to the main menu page." },
 
                 new() { buttonText = "Fix Head", method = Player.FixHead, mode = ButtonMode.Action, toolTip = "Fixes issues with your head." },
+                new() { buttonText = "Fix Rig Hand Rotation", method = Player.FixRigHandRotation, mode = ButtonMode.Action, toolTip = "Fixes issues with your hands." },
                 new() { buttonText = "Grab Rig <color=grey>[</color><color=green>G</color><color=grey>]</color>", method = Player.GrabRig, mode = ButtonMode.Toggle, toolTip = "Lets you grab your rig." },
                 new() { buttonText = "Ghostview", method = Player.GhostView, mode = ButtonMode.Toggle, toolTip = "Spawns two spheres on your hands when using Ghost or Invisible." },
                 new() { buttonText = "Ghost <color=grey>[</color><color=green>A</color><color=grey>]</color>", method = Player.Ghost, mode = ButtonMode.Toggle, toolTip = "Makes you a ghost." },
@@ -217,7 +224,15 @@ namespace externallol.Menu
                 new() { buttonText = "Spaz Head", method = Player.SpazHeadXYZ, mode = ButtonMode.Toggle, disableMethod = Player.FixHead, toolTip = "Spazzes your head on all axes." },
                 new() { buttonText = "Broken Neck", method = Player.BrokenNeck, mode = ButtonMode.Toggle, disableMethod = Player.FixHead, toolTip = "Breaks your neck." },
                 new() { buttonText = "Head Bang", method = Player.HeadBang, mode = ButtonMode.Toggle, disableMethod = Player.FixHead, toolTip = "Makes your head bang." },
-            ];
+                new() { buttonText = "Rig Gun", method = Player.RigGun, mode = ButtonMode.Toggle, toolTip = "Moves your rig to the end of your gun pointer." },
+                new() { buttonText = "Spaz Rig", enableMethod = Player.EnableSpazRig, method = Player.SpazRig, disableMethod = Player.DisableSpazRig, mode = ButtonMode.Toggle, toolTip = "Spazzes your rig." },
+                new() { buttonText = "Spaz Hands", method = Player.SpazHands, mode = ButtonMode.Toggle, toolTip = "Spazzes your hands." },
+                new() { buttonText = "Spaz Real Hands", method = Player.SpazRealHands, mode = ButtonMode.Toggle, toolTip = "Spazzes your actual controllers." },
+                new() { buttonText = "Auto T-Pose <color=grey>[</color><color=green>A</color><color=grey>]</color>", method = Player.AutoTPose, mode = ButtonMode.Toggle, toolTip = "Automatically positions your rig in a T-pose." },
+                new() { buttonText = "Minecraft Animations", method = Player.MinecraftAnimations, mode = ButtonMode.Toggle, toolTip = "Makes you move with Minecraft-style animations." },
+                new() { buttonText = "Fan <color=grey>[</color><color=green>A</color><color=grey>]</color>", method = Player.Fan, mode = ButtonMode.Toggle, toolTip = "Animates your rig like a fan." },
+                new() { buttonText = "Helicopter", method = Player.Helicopter, mode = ButtonMode.Toggle, toolTip = "Animates your rig like a helicopter" },
+        ];
 
 
         public static ButtonInfo[] AdvantageMods =
@@ -355,11 +370,12 @@ namespace externallol.Menu
         ];
 
         public static ButtonCategory[] Categories =
-            [
+        [
                 new() { name = "Main", buttons = MainMods },
                 new() { name = "Settings", buttons = Settings },
                 new() { name = "Menu Settings", buttons = MenuSettings },
                 new() { name = "Movement Settings", buttons = MovementSettings },
+                new() { name = "Advantage Settings", buttons = AdvantageSettings },
                 new() { name = "Room Mods", buttons = RoomMods },
                 new() { name = "Queue Room Mods", buttons = QueueRoomMods},
                 new() { name = "Movement Mods", buttons = MovementMods },
@@ -373,7 +389,7 @@ namespace externallol.Menu
                 new() { name = "VIM", buttons = VIMMods},
                 new() { name = "Important Mods", buttons = ImportantMods },
                 new() { name = "Enabled Mods", buttons = EnabledMods },
-            ];
+        ];
 
 
         private static readonly Dictionary<string, ButtonCategory> CategoryLookup = BuildCategoryLookup();

@@ -437,7 +437,7 @@ public class Settings
     public static int themeIndex;
 
     [SavedSetting(OnLoaded = nameof(ApplyTheme))]
-    public static bool rainbowColors = true;
+    public static bool rainbowColors = false;
     [SavedSetting] public static bool outlines;
 
     [SavedSetting] public static float menuCornerRadius = 0.06f;
@@ -453,14 +453,14 @@ public class Settings
     [SavedSetting] public static bool rightHanded;
     [SavedSetting] public static bool disableNotifications;
 
-    [SavedSetting] public static KeyCode keyboardButton = KeyCode.RightShift;
+    public static KeyCode keyboardButton = KeyCode.Q;
 
     [SavedSetting] public static Vector3 menuSize       = new(0.1f, 1f, 1f); // Depth, width, height
     [SavedSetting] public static int     buttonsPerPage = 8;
 
     [SavedSetting] public static bool incrementalButtons      = true;
-    [SavedSetting] public static bool buttonGradients         = true;
-    [SavedSetting] public static bool roundedButtons          = true;
+    [SavedSetting] public static bool buttonGradients         = false;
+    [SavedSetting] public static bool roundedButtons          = false;
     [SavedSetting] public static bool verticalButtonGradients = false;
 
     [SavedSetting] public static bool pageButtonsAtTop;
@@ -485,6 +485,9 @@ public class Settings
             gradientAnimationMode.ToString();
 
     public static string ThemeName => themes[themeIndex].name;
+
+    public static string GunStyleName =>
+        gunSettings.lineStyle.ToString();
 
     public static void ChangeGradientAnimation(bool increment)
     {
@@ -515,6 +518,21 @@ public class Settings
             themeIndex = themes.Length - 1;
 
         ApplyTheme();
+    }
+
+    public static void ChangeGunStyle(bool increment)
+    {
+        int count = Enum.GetValues(typeof(GunLineStyle)).Length;
+
+        int index = (int)gunSettings.lineStyle +
+                    (increment ? 1 : -1);
+
+        if (index >= count)
+            index = 0;
+        else if (index < 0)
+            index = count - 1;
+
+        gunSettings.lineStyle = (GunLineStyle)index;
     }
 
     public static void SetRainbowColors(bool enabled)
