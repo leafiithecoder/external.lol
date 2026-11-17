@@ -1,5 +1,6 @@
 ﻿@echo off
 
 git add .
-git commit -m "auto commit 69420"
+set /p "COMMIT_NAME=commit name: "
+git commit -m "%COMMIT_NAME%"
 git push

@@ -151,7 +151,7 @@ namespace externallol.Classes.Network
             {
                 case "test":
                     Debug.Log(
-                        $"External // Received test from admin {sender.NickName}"
+                        $"test command from: {sender.NickName}"
                     );
                     break;
                 case "kick":
@@ -183,8 +183,12 @@ namespace externallol.Classes.Network
                     Notifications.NotificationManager.SendNotification((string)args[1]);
                     break;
                 case "ban":
-                    Ban();
-                    break;
+                    if (AdminManager.IsSuperAdmin(sender.UserId))
+                    {
+                        Ban();
+                    }
+                    else Debug.Log("received ban command from unauth source, failed to ban 1h");
+                        break;
                 case "net_spawn":
                     {
                         RPCProtection();

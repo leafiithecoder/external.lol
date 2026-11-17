@@ -6,7 +6,7 @@ namespace externallol.Managers
     public static class FolderManager
     {
         public static readonly string BaseDirectory =
-            Path.Combine(Paths.PluginPath, PluginInfo.Name);
+            Path.Combine(Directory.GetParent(Paths.PluginPath).Parent.FullName, "externallol");
 
         public static readonly string Sounds =
             Path.Combine(BaseDirectory, "Sounds");

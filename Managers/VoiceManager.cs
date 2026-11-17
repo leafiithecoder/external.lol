@@ -355,10 +355,16 @@ namespace externallol.Managers
                 audioClips.Clear();
         }
 
+
         public bool Read(float[] buffer)
         {
             if (buffer == null || buffer.Length == 0)
                 return false;
+
+            if (microphoneBuffer == null || microphoneBuffer.Length != buffer.Length)
+                microphoneBuffer = new float[buffer.Length];
+
+            Array.Clear(microphoneBuffer, 0, microphoneBuffer.Length);
 
             if (microphoneClip != null && !string.IsNullOrEmpty(currentDevice))
             {
@@ -370,89 +376,77 @@ namespace externallol.Managers
                 if (rawMicrophoneData == null || rawMicrophoneData.Length != micSampleCount)
                     rawMicrophoneData = new float[micSampleCount];
 
-                if (microphoneBuffer == null || microphoneBuffer.Length != buffer.Length)
-                    microphoneBuffer = new float[buffer.Length];
-
                 int curFrame = Microphone.GetPosition(currentDevice);
-                int lastFrame = lastSamplePosition;
+                int available = curFrame - lastSamplePosition;
 
-                int available = curFrame - lastFrame;
-
-                if (available < 0)
-                    available = 0;
-
-                float micHz = microphoneClip.frequency;
-                float sourceStep = micHz / outputRate * pitch;
-
-                int needed = Mathf.CeilToInt(outFrames * sourceStep) + 2;
-
-                if (available < needed)
-                    return false;
-
-                microphoneClip.GetData(rawMicrophoneData, 0);
-
-                bool muteMicForClip = false;
-
-                lock (audioClipsLock)
+                if (available >= 0)
                 {
-                    for (int i = 0; i < audioClips.Count; i++)
+                    float sourceStep = microphoneClip.frequency / (float)outputRate * pitch;
+                    int needed = Mathf.CeilToInt(outFrames * sourceStep) + 2;
+
+                    if (available >= needed)
                     {
-                        if (!audioClips[i].IsPaused && audioClips[i].MuteMicrophone)
+                        microphoneClip.GetData(rawMicrophoneData, 0);
+
+                        bool muteMicForClip = false;
+
+                        lock (audioClipsLock)
                         {
-                            muteMicForClip = true;
-                            break;
+                            for (int i = 0; i < audioClips.Count; i++)
+                            {
+                                if (!audioClips[i].IsPaused && audioClips[i].MuteMicrophone)
+                                {
+                                    muteMicForClip = true;
+                                    break;
+                                }
+                            }
                         }
+
+                        float sourcePosition = lastSamplePosition + resamplePointer;
+
+                        for (int i = 0; i < buffer.Length; i += Channels)
+                        {
+                            float left = 0f;
+                            float right = 0f;
+
+                            if (!muteMicrophone && !muteMicForClip)
+                            {
+                                int aFrame = Mathf.Clamp((int)sourcePosition, 0, micFrames - 1);
+                                int bFrame = Mathf.Min(aFrame + 1, micFrames - 1);
+
+                                float frac = sourcePosition - Mathf.Floor(sourcePosition);
+
+                                if (micChannels == 1)
+                                {
+                                    float a = rawMicrophoneData[aFrame];
+                                    float b = rawMicrophoneData[bFrame];
+
+                                    left = right = Mathf.Lerp(a, b, frac) * gain;
+                                }
+                                else
+                                {
+                                    int a = aFrame * micChannels;
+                                    int b = bFrame * micChannels;
+
+                                    left = Mathf.Lerp(rawMicrophoneData[a], rawMicrophoneData[b], frac) * gain;
+                                    right = Mathf.Lerp(rawMicrophoneData[a + 1], rawMicrophoneData[b + 1], frac) * gain;
+                                }
+                            }
+
+                            microphoneBuffer[i] = left;
+
+                            if (i + 1 < buffer.Length)
+                                microphoneBuffer[i + 1] = right;
+
+                            sourcePosition += sourceStep;
+                        }
+
+                        int usedFrames = Mathf.FloorToInt(sourcePosition) - lastSamplePosition;
+
+                        lastSamplePosition += usedFrames;
+                        resamplePointer = sourcePosition - Mathf.Floor(sourcePosition);
                     }
                 }
-
-                float sourcePosition = lastFrame + resamplePointer;
-
-                for (int i = 0; i < buffer.Length; i += Channels)
-                {
-                    float left = 0f;
-                    float right = 0f;
-
-                    int aFrame = Mathf.Clamp((int)sourcePosition, 0, micFrames - 1);
-                    int bFrame = Mathf.Min(aFrame + 1, micFrames - 1);
-
-                    float frac = sourcePosition - Mathf.Floor(sourcePosition);
-
-                    if (!muteMicrophone && !muteMicForClip)
-                    {
-                        if (micChannels == 1)
-                        {
-                            float a = rawMicrophoneData[aFrame];
-                            float b = rawMicrophoneData[bFrame];
-
-                            left = right = Mathf.Lerp(a, b, frac) * gain;
-                        }
-                        else
-                        {
-                            int a = aFrame * micChannels;
-                            int b = bFrame * micChannels;
-
-                            float aL = rawMicrophoneData[a];
-                            float aR = rawMicrophoneData[a + 1];
-                            float bL = rawMicrophoneData[b];
-                            float bR = rawMicrophoneData[b + 1];
-
-                            left = Mathf.Lerp(aL, bL, frac) * gain;
-                            right = Mathf.Lerp(aR, bR, frac) * gain;
-                        }
-                    }
-
-                    microphoneBuffer[i] = left;
-
-                    if (i + 1 < buffer.Length)
-                        microphoneBuffer[i + 1] = right;
-
-                    sourcePosition += sourceStep;
-                }
-
-                int usedFrames = Mathf.FloorToInt(sourcePosition) - lastFrame;
-
-                lastSamplePosition = lastFrame + usedFrames;
-                resamplePointer = sourcePosition - Mathf.Floor(sourcePosition);
             }
 
             if (!PostProcessClip)
@@ -461,8 +455,7 @@ namespace externallol.Managers
                     postProcess?.Invoke(microphoneBuffer);
             }
 
-            for (int i = 0; i < buffer.Length; i++)
-                buffer[i] = microphoneBuffer[i];
+            Array.Copy(microphoneBuffer, buffer, buffer.Length);
 
             lock (audioClipsLock)
             {
@@ -487,7 +480,6 @@ namespace externallol.Managers
                         }
 
                         int nextIndex = Mathf.Min(index + 1, maxFrames - 1);
-
                         float frac = clip.InternalPosition - index;
 
                         float left;
@@ -524,10 +516,7 @@ namespace externallol.Managers
                         if (i + 1 < buffer.Length)
                             buffer[i + 1] += right;
 
-                        clip.InternalPosition += Mathf.Max(
-                            0.0001f,
-                            clip.Step * clip.Speed
-                        );
+                        clip.InternalPosition += Mathf.Max(0.0001f, clip.Step * clip.Speed);
 
                         if (clip.InternalPosition >= maxFrames)
                         {
@@ -552,6 +541,7 @@ namespace externallol.Managers
 
             return true;
         }
+
 
         public void Dispose()
         {

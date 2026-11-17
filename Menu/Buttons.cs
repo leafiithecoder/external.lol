@@ -1,11 +1,12 @@
-﻿using GorillaLocomotion;
-using GorillaNetworking;
-using externallol.Classes;
+﻿using externallol.Classes;
 using externallol.Classes.Network;
+using externallol.Managers;
 using externallol.Mods;
 using externallol.Notifications;
 using externallol.Patches;
 using externallol.Patches.Internal;
+using GorillaLocomotion;
+using GorillaNetworking;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -32,6 +33,7 @@ namespace externallol.Menu
             new() { buttonText = "Overpowered Mods", method = () => SetCategory("Overpowered Mods"), mode = ButtonMode.Action, isCategory = true, toolTip = "Opens the overpowered mods category." },
             new() { buttonText = "Advantage Mods", method = () => SetCategory("Advantage Mods"), mode = ButtonMode.Action, isCategory = true, toolTip = "Opens the advantage mods category." },
             new() { buttonText = "Important Mods", method = () => SetCategory("Important Mods"), mode = ButtonMode.Action, isCategory = true, toolTip = "Opens the important mods category." },
+            new() { buttonText = "Soundboard", method = () => SetCategory("Soundboard"), mode = ButtonMode.Action, isCategory = true, toolTip = "Opens the soundboard." },
         ];
 
         public static ButtonInfo[] Settings =
@@ -366,7 +368,14 @@ namespace externallol.Menu
 
         public static ButtonInfo[] EnabledMods =
         [
-            new() { buttonText = "Exit Enabled Mods", method = () => SetCategory("Main"), mode = ButtonMode.Action, isCategory = true, toolTip = "Returns to the main menu page." }
+            new() { buttonText = "Exit Enabled Mods", method = () => SetCategory("Main"), mode = ButtonMode.Action, isCategory = true, toolTip = "Returns to the main menu page." },
+        ];
+
+        public static ButtonInfo[] Soundboard =
+        [
+            new() { buttonText = "Exit Soundboard", method = () => SetCategory("Main"), mode = ButtonMode.Action, isCategory = true, toolTip = "Returns to the main menu." },
+            new() { buttonText = "Stop Sound", method = SoundboardManager.StopCurrentSound, mode = ButtonMode.Action, toolTip = "Stops the currently playing sound." },
+            new() { buttonText = "Reload Sounds", method = SoundboardManager.ReloadSounds, mode = ButtonMode.Action, toolTip = "Reloads sounds from the Sounds folder." },
         ];
 
         public static ButtonCategory[] Categories =
@@ -389,6 +398,7 @@ namespace externallol.Menu
                 new() { name = "VIM", buttons = VIMMods},
                 new() { name = "Important Mods", buttons = ImportantMods },
                 new() { name = "Enabled Mods", buttons = EnabledMods },
+                new() { name = "Soundboard", buttons = Soundboard },
         ];
 
 

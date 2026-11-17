@@ -60,22 +60,19 @@ namespace externallol.Tools
             GorillaServer.Instance.BroadcastMyRoom(broadcastMyRoomRequest, delegate { }, delegate { });
         }
 
-        public static string Map(VRRig r)
+        public static string Map(VRRig r) // get map
         {
             return EnumUtilExt.GetName<GTZone>(r.zoneEntity.currentZone);
         }
 
         public static void Init()
         {
-            CoroutineManager.Instance.StartCoroutine(AdminManager.WaitForAdminPanel());
+            
             ExternalData.Load();
             External.Initialize();
-            AdminManager.LoadWatermark();
-            Boards.SetLaunchBoards();
             Debug.Log($"externallol // Initialized {Buttons.ButtonCount} buttons.");
             Debug.Log(AdminManager.banner);
-            FolderManager.Initialize();
-
+            _Managers._Load();
         }
 
         public static void Shutdown()
