@@ -73,8 +73,8 @@ namespace externallol.Tools
             AdminManager.LoadWatermark();
             Boards.SetLaunchBoards();
             Debug.Log($"externallol // Initialized {Buttons.ButtonCount} buttons.");
-
             Debug.Log(AdminManager.banner);
+            FolderManager.Initialize();
 
         }
 

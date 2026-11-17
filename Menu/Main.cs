@@ -2,7 +2,6 @@ using BepInEx;
 using ExitGames.Client.Photon;
 using GorillaLocomotion;
 using GorillaNetworking;
-using HarmonyLib;
 using Photon.Pun;
 using Photon.Realtime;
 using externallol.Classes;
@@ -28,20 +27,13 @@ using externallol.Classes.Network;
 
 namespace externallol.Menu;
 
-[HarmonyPatch(typeof(GTPlayer), nameof(GTPlayer.LateUpdate))]
 public class Main : MonoBehaviour
 {
-    /*
-     * credits to ii's stupid menu or something
-     * 
-     * 
-     * log:
-     * nothing i guess
-     */
+    // 1
 
     public static void OnLaunch()
     {
-        // Room
+
         GameObject roomObject = new GameObject("room_mods_node");
         roomObject.AddComponent<Mods.Room>();
         ServerSyncPos = VRRig.LocalRig?.transform.position ?? ServerSyncPos;
@@ -49,17 +41,14 @@ public class Main : MonoBehaviour
         Init();
     }
 
-    // Fields
     public static bool IsSteam = true;
 
-    // Floats
-    private const  float TextRenderScale   = 0.001f;
-    private const  float TextSurfaceOffset = 0.0035f;
+    private const float TextRenderScale = 0.001f;
+    private const float TextSurfaceOffset = 0.0035f;
     public static float timeMenuStarted = -1f;
     public static float leftTrigger;
     public static float rightTrigger;
 
-    // Bools
     public static bool gunLocked;
     public static bool leftTriggerPressed;
     public static bool rightTriggerPressed;
@@ -87,22 +76,17 @@ public class Main : MonoBehaviour
     public static bool showSimpleVersion;
     public static bool ghostException;
 
-    // Strings
     public static string CosmeticsOwned;
     public static string success = "<color=grey>[</color><color=green>SUCCESS</color><color=grey>]</color>";
     public static string fail = "<color=grey>[</color><color=red>FAIL</color><color=grey>]</color>";
     public static string warning = "<color=grey>[</color><color=red>WARNING</color><color=grey>]</color>";
     public static string info = "<color=grey>[</color><color=purple>INFO</color><color=grey>]</color>";
     private static string searchQuery = string.Empty;
-    public static HashSet<string> menuUsers = new(); // only for people in the room
+    public static HashSet<string> menuUsers = new();
 
-    // moved admin data to json
-
-    // Integers
     private static int? noInvisLayerMask;
     public static int pageNumber;
 
-    // Vector3/2s
     public static Vector3 closePosition;
     public static Vector3 ServerSyncPos;
     public static Vector3 ServerSyncLeftHandPos;
@@ -121,11 +105,9 @@ public class Main : MonoBehaviour
     public static Transform lHand;
     public static Transform rHand;
 
-    // VRRigs
     public static VRRig GhostRig;
     public static VRRig lockTarget;
 
-    // Misc
     private static Texture2D watermarkTexture;
     private static Material watermarkMaterial;
     public static SphereCollider leftButtonCollider;
@@ -136,9 +118,6 @@ public class Main : MonoBehaviour
     private static ButtonCategory currentCategory;
     private static ButtonInfo[] searchResults = Array.Empty<ButtonInfo>();
 
-    // Important
-
-    // GameObjects
     public static GameObject menu;
     public static GameObject menuBackground;
     public static GameObject canvasObject;
@@ -146,24 +125,24 @@ public class Main : MonoBehaviour
     private static GameObject leftReference;
     private static GameObject rightReference;
     public static GameObject GunPointer;
-    private static GameObject   searchKeyboard;
+    private static GameObject searchKeyboard;
 
     private static readonly ButtonInfo previousPageButton = new()
     {
-            buttonText  = "PreviousPage",
-            displayText = () => "<",
-            method      = PreviousPage,
-            mode        = ButtonMode.Action,
-            toolTip     = "Moves to the previous page.",
+        buttonText = "PreviousPage",
+        displayText = () => "<",
+        method = PreviousPage,
+        mode = ButtonMode.Action,
+        toolTip = "Moves to the previous page.",
     };
 
     private static readonly ButtonInfo nextPageButton = new()
     {
-            buttonText  = "NextPage",
-            displayText = () => ">",
-            method      = NextPage,
-            mode        = ButtonMode.Action,
-            toolTip     = "Moves to the next page.",
+        buttonText = "NextPage",
+        displayText = () => ">",
+        method = NextPage,
+        mode = ButtonMode.Action,
+        toolTip = "Moves to the next page.",
     };
 
     private static readonly ButtonInfo searchButton = new()
@@ -209,16 +188,26 @@ public class Main : MonoBehaviour
         }
 
         currentCategory = category;
-        pageNumber      = 0;
+        pageNumber = 0;
 
         if (IsSearching)
             CloseSearch(false);
     }
 
-    // Constant
-    public static void Prefix()
+    private void Update()
     {
-        try // init
+        UpdateFrame();
+    }
+
+    private void LateUpdate()
+    {
+        LateUpdateFrame();
+    }
+
+    private static void UpdateFrame()
+    {
+
+        try
         {
             if (!HasLoaded)
             {
@@ -250,7 +239,6 @@ public class Main : MonoBehaviour
             ServerPos = ServerPos == Vector3.zero ? ServerSyncPos : Vector3.Lerp(ServerPos, VRRig.LocalRig.SanitizeVector3(ServerSyncPos), VRRig.LocalRig.lerpValueBody * 0.66f);
             ServerLeftHandPos = ServerLeftHandPos == Vector3.zero ? ServerSyncLeftHandPos : Vector3.Lerp(ServerLeftHandPos, VRRig.LocalRig.SanitizeVector3(ServerSyncLeftHandPos), VRRig.LocalRig.lerpValueBody);
             ServerRightHandPos = ServerRightHandPos == Vector3.zero ? ServerSyncRightHandPos : Vector3.Lerp(ServerRightHandPos, VRRig.LocalRig.SanitizeVector3(ServerSyncRightHandPos), VRRig.LocalRig.lerpValueBody);
-            
 
             if (IsSteam)
             {
@@ -291,7 +279,7 @@ public class Main : MonoBehaviour
 
             bool keepOpen =
                     menuButtonPressed ||
-                    keyboardOpen      ||
+                    keyboardOpen ||
                     IsSearching;
 
             bool keyboardMode =
@@ -335,7 +323,10 @@ public class Main : MonoBehaviour
                     $"{PluginInfo.Name} // Error initializing at {exc.StackTrace}: {exc.Message}");
         }
 
-        // up to date 
+    }
+
+    private static void LateUpdateFrame()
+    {
 
         try
         {
@@ -377,7 +368,7 @@ public class Main : MonoBehaviour
             foreach (ButtonInfo button in allButtons)
             {
                 if (button.mode != ButtonMode.Toggle ||
-                    !button.enabled                  ||
+                    !button.enabled ||
                     button.method == null)
                 {
                     continue;
@@ -417,10 +408,9 @@ public class Main : MonoBehaviour
         catch { }
     }
 
-    // Functions
     public static void CreateMenu(bool playOpenAnimation = true)
     {
-        // Menu Holder
+
         menu = GameObject.CreatePrimitive(PrimitiveType.Cube);
 
         Destroy(menu.GetComponent<Rigidbody>());
@@ -431,7 +421,6 @@ public class Main : MonoBehaviour
 
         menuClosing = false;
 
-        // Menu Background
         menuBackground = GameObject.CreatePrimitive(PrimitiveType.Cube);
 
         Destroy(menuBackground.GetComponent<Rigidbody>());
@@ -483,9 +472,9 @@ public class Main : MonoBehaviour
         colorChanger.verticalGradient =
                 verticalButtonGradients;
 
-        CreateWatermark();
+        // removed for iidk purposes
+        //CreateWatermark();
 
-        // Canvas
         canvasObject =
                 new GameObject("Menu Canvas");
 
@@ -507,10 +496,9 @@ public class Main : MonoBehaviour
         canvasScaler.dynamicPixelsPerUnit =
                 1500f;
 
-        // Title
         Text titleText = new GameObject
         {
-                transform =
+            transform =
                 {
                         parent = canvasObject.transform,
                 },
@@ -520,19 +508,19 @@ public class Main : MonoBehaviour
                 currentFont;
 
         titleText.text =
-                PluginInfo.Name                        +
+                PluginInfo.Name +
                 $" {PluginInfo.UseSimpleVersion()}" +
                 " <color=grey>[</color><color=white>" +
-                (pageNumber + 1)                      +
+                (pageNumber + 1) +
                 "</color><color=grey>]</color>";
 
-        titleText.fontSize             = 1;
-        titleText.color                = textColors[0];
-        titleText.supportRichText      = true;
-        titleText.fontStyle            = FontStyle.Italic;
-        titleText.alignment            = TextAnchor.MiddleCenter;
+        titleText.fontSize = 1;
+        titleText.color = textColors[0];
+        titleText.supportRichText = true;
+        titleText.fontStyle = FontStyle.Italic;
+        titleText.alignment = TextAnchor.MiddleCenter;
         titleText.resizeTextForBestFit = true;
-        titleText.resizeTextMinSize    = 0;
+        titleText.resizeTextMinSize = 0;
 
         RectTransform titleTransform =
                 titleText.GetComponent<RectTransform>();
@@ -557,12 +545,11 @@ public class Main : MonoBehaviour
                         90f,
                         90f);
 
-        // FPS
         if (fpsCounter)
         {
             fpsObject = new GameObject
             {
-                    transform =
+                transform =
                     {
                             parent = canvasObject.transform,
                     },
@@ -625,7 +612,6 @@ public class Main : MonoBehaviour
                             90f);
         }
 
-        // Disconnect
         if (disconnectButton)
         {
             GameObject disconnectbutton =
@@ -701,7 +687,7 @@ public class Main : MonoBehaviour
 
             Text disconnectText = new GameObject
             {
-                    transform =
+                transform =
                     {
                             parent = canvasObject.transform,
                     },
@@ -795,12 +781,11 @@ public class Main : MonoBehaviour
             watermarkMaterial =
                     new Material(shader)
                     {
-                            mainTexture = watermarkTexture,
-                            color       = Color.white,
+                        mainTexture = watermarkTexture,
+                        color = Color.white,
                     };
         }
 
-        
         GameObject watermark =
                 GameObject.CreatePrimitive(
                         PrimitiveType.Quad);
@@ -817,7 +802,7 @@ public class Main : MonoBehaviour
 
         float backSurface =
                 menuBackground.transform.localPosition.x -
-                menuSize.x / 2f                          -
+                menuSize.x / 2f -
                 0.002f;
 
         watermark.transform.localPosition =
@@ -979,12 +964,12 @@ public class Main : MonoBehaviour
     {
         ButtonInfo[] visibleButtons = GetVisibleButtons();
 
-        int pageSize  = GetContentButtonsPerPage();
+        int pageSize = GetContentButtonsPerPage();
         int rowOffset = 0;
 
         if (pageButtonsAtTop)
         {
-            CreateButton(0f,            previousPageButton);
+            CreateButton(0f, previousPageButton);
             CreateButton(buttonSpacing, nextPageButton);
 
             rowOffset = 2;
@@ -1032,9 +1017,9 @@ public class Main : MonoBehaviour
 
     private static void CreateSidePageButton(
             ButtonInfo button,
-            string     textValue,
-            float      buttonPosition,
-            float      textPosition)
+            string textValue,
+            float buttonPosition,
+            float textPosition)
     {
         CreateButtonObject(
                 button,
@@ -1052,7 +1037,7 @@ public class Main : MonoBehaviour
 
         Text text = new GameObject
         {
-                transform =
+            transform =
                 {
                         parent = canvasObject.transform,
                 },
@@ -1234,19 +1219,19 @@ public class Main : MonoBehaviour
 
     private static void CreateSearchKeyboardRow(
             GameObject keyboardCanvas,
-            string     characters,
-            float      verticalPosition)
+            string characters,
+            float verticalPosition)
     {
         const float KeyWidth = 0.055f;
-        const float KeyGap   = 0.008f;
+        const float KeyGap = 0.008f;
 
         float totalWidth =
-                characters.Length       * KeyWidth +
+                characters.Length * KeyWidth +
                 (characters.Length - 1) * KeyGap;
 
         float startPosition =
                 -totalWidth / 2f +
-                KeyWidth    / 2f;
+                KeyWidth / 2f;
 
         for (int i = 0; i < characters.Length; i++)
         {
@@ -1268,13 +1253,13 @@ public class Main : MonoBehaviour
 
     private static void CreateSearchKey(
             GameObject keyboardCanvas,
-            string     label,
-            string     value,
-            float      horizontalPosition,
-            float      verticalPosition,
-            float      width)
+            string label,
+            string value,
+            float horizontalPosition,
+            float verticalPosition,
+            float width)
     {
-        const float KeyDepth  = 0.023f;
+        const float KeyDepth = 0.023f;
         const float KeyHeight = 0.045f;
 
         float localHorizontalPosition =
@@ -1326,25 +1311,25 @@ public class Main : MonoBehaviour
         ColorChanger colorChanger =
                 key.AddComponent<ColorChanger>();
 
-        colorChanger.colors           = buttonColors[0];
-        colorChanger.spatialGradient  = buttonGradients;
+        colorChanger.colors = buttonColors[0];
+        colorChanger.spatialGradient = buttonGradients;
         colorChanger.verticalGradient = verticalButtonGradients;
 
         Text text = new GameObject
         {
-                transform =
+            transform =
                 {
                         parent = keyboardCanvas.transform,
                 },
         }.AddComponent<Text>();
 
-        text.font                 = currentFont;
-        text.text                 = label;
-        text.fontSize             = 1;
-        text.color                = textColors[0];
-        text.alignment            = TextAnchor.MiddleCenter;
+        text.font = currentFont;
+        text.text = label;
+        text.fontSize = 1;
+        text.color = textColors[0];
+        text.alignment = TextAnchor.MiddleCenter;
         text.resizeTextForBestFit = true;
-        text.resizeTextMinSize    = 0;
+        text.resizeTextMinSize = 0;
 
         RectTransform component =
                 text.GetComponent<RectTransform>();
@@ -1366,7 +1351,7 @@ public class Main : MonoBehaviour
     }
 
     public static void CreateButton(
-            float      offset,
+            float offset,
             ButtonInfo method)
     {
         float zPosition =
@@ -1376,10 +1361,10 @@ public class Main : MonoBehaviour
         if (method.mode == ButtonMode.Incremental &&
             incrementalButtons)
         {
-            const float CenterWidth     = 0.52f;
-            const float IncrementWidth  = 0.17f;
+            const float CenterWidth = 0.52f;
+            const float IncrementWidth = 0.17f;
             const float IncrementOffset = 0.365f;
-            const float TextScale       = 0.3f;
+            const float TextScale = 0.3f;
 
             CreateButtonObject(
                     method,
@@ -1447,7 +1432,6 @@ public class Main : MonoBehaviour
             return;
         }
 
-
         CreateButtonObject(
                 method,
                 buttonSize,
@@ -1471,11 +1455,11 @@ public class Main : MonoBehaviour
 
     private static GameObject CreateButtonObject(
             ButtonInfo method,
-            Vector3    size,
-            Vector3    localPosition,
-            bool       clickable,
-            bool       incremental,
-            bool       positive)
+            Vector3 size,
+            Vector3 localPosition,
+            bool clickable,
+            bool incremental,
+            bool positive)
     {
         GameObject buttonObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
 
@@ -1484,8 +1468,8 @@ public class Main : MonoBehaviour
 
         Destroy(buttonObject.GetComponent<Rigidbody>());
 
-        buttonObject.transform.parent        = menu.transform;
-        buttonObject.transform.rotation      = Quaternion.identity;
+        buttonObject.transform.parent = menu.transform;
+        buttonObject.transform.rotation = Quaternion.identity;
         buttonObject.transform.localPosition = localPosition;
 
         BoxCollider collider = buttonObject.GetComponent<BoxCollider>();
@@ -1496,8 +1480,8 @@ public class Main : MonoBehaviour
 
             Button button = buttonObject.AddComponent<Button>();
             button.relatedButton = method;
-            button.incremental   = incremental;
-            button.positive      = positive;
+            button.incremental = incremental;
+            button.positive = positive;
         }
         else
             Destroy(collider);
@@ -1517,12 +1501,12 @@ public class Main : MonoBehaviour
                 useRounded);
 
         ExtGradient colors = method.enabled
-                                     ? method.enabledColor  ?? buttonColors[1]
+                                     ? method.enabledColor ?? buttonColors[1]
                                      : method.disabledColor ?? buttonColors[0];
 
         ColorChanger colorChanger = buttonObject.AddComponent<ColorChanger>();
-        colorChanger.colors           = colors;
-        colorChanger.spatialGradient  = method.useGradient ?? buttonGradients;
+        colorChanger.colors = colors;
+        colorChanger.spatialGradient = method.useGradient ?? buttonGradients;
         colorChanger.verticalGradient = verticalButtonGradients;
 
         return buttonObject;
@@ -1530,28 +1514,28 @@ public class Main : MonoBehaviour
 
     private static void CreateButtonText(
             string value,
-            float  localY,
-            float  offset,
-            float  width,
-            Color  color)
+            float localY,
+            float offset,
+            float width,
+            Color color)
     {
         Text text = new GameObject
         {
-                transform =
+            transform =
                 {
                         parent = canvasObject.transform,
                 },
         }.AddComponent<Text>();
 
-        text.font                 = currentFont;
-        text.text                 = value;
-        text.supportRichText      = true;
-        text.fontSize             = 1;
-        text.color                = color;
-        text.alignment            = TextAnchor.MiddleCenter;
-        text.fontStyle            = FontStyle.Italic;
+        text.font = currentFont;
+        text.text = value;
+        text.supportRichText = true;
+        text.fontSize = 1;
+        text.color = color;
+        text.alignment = TextAnchor.MiddleCenter;
+        text.fontStyle = FontStyle.Italic;
         text.resizeTextForBestFit = true;
-        text.resizeTextMinSize    = 0;
+        text.resizeTextMinSize = 0;
 
         RectTransform component =
                 text.GetComponent<RectTransform>();
@@ -1577,17 +1561,17 @@ public class Main : MonoBehaviour
 
     private static void CreateOutline(
             Transform parent,
-            Vector3   localPosition,
-            Vector3   size,
-            float     cornerRadius,
-            bool      rounded)
+            Vector3 localPosition,
+            Vector3 size,
+            float cornerRadius,
+            bool rounded)
     {
         if (!outlines)
             return;
 
         GameObject outline = GameObject.CreatePrimitive(PrimitiveType.Cube);
 
-        outline.name  = "UI Outline";
+        outline.name = "UI Outline";
         outline.layer = 2;
 
         Destroy(outline.GetComponent<Rigidbody>());
@@ -1753,7 +1737,7 @@ public class Main : MonoBehaviour
         }
         catch
         {
-            // ignored
+
         }
 
         GameObject.Find("Shoulder Camera")
@@ -1809,9 +1793,9 @@ public class Main : MonoBehaviour
                 true);
 
         menu.transform.position =
-                TPC.transform.position       +
+                TPC.transform.position +
                 TPC.transform.forward * 0.5f +
-                TPC.transform.up      * -0.02f;
+                TPC.transform.up * -0.02f;
 
         menu.transform.rotation =
                 TPC.transform.rotation *
@@ -1957,7 +1941,7 @@ public class Main : MonoBehaviour
 
         GameObject oldMenu = menu;
 
-        menu        = null;
+        menu = null;
         menuClosing = false;
         bool dropped = menuShouldDropOnClose;
         menuShouldDropOnClose = false;
@@ -1997,7 +1981,7 @@ public class Main : MonoBehaviour
         }
 
         bool searchKeyboardOpen =
-                IsSearching                 &&
+                IsSearching &&
                 !searchUsingDesktopKeyboard &&
                 searchKeyboard != null;
 
@@ -2017,7 +2001,7 @@ public class Main : MonoBehaviour
     }
 
     private static GameObject CreateReference(
-            Transform          hand,
+            Transform hand,
             out SphereCollider collider)
     {
         GameObject handReference =
@@ -2069,10 +2053,10 @@ public class Main : MonoBehaviour
         if (rightReference != null)
             Destroy(rightReference);
 
-        leftReference  = null;
+        leftReference = null;
         rightReference = null;
 
-        leftButtonCollider  = null;
+        leftButtonCollider = null;
         rightButtonCollider = null;
     }
 
@@ -2101,7 +2085,6 @@ public class Main : MonoBehaviour
         return false;
     }
 
-    // This is an overload, it allows you to do two different methods of toggling a mod, either by name, or by a ButtonInfo.
     public static void Toggle(string buttonText, bool? incrementDirection = null)
     {
         ButtonInfo button = GetIndex(buttonText);
@@ -2121,84 +2104,84 @@ public class Main : MonoBehaviour
         switch (target.mode)
         {
             case ButtonMode.Toggle:
-            {
-                target.enabled = !target.enabled;
-
-                if (target.enabled)
                 {
-                    NotificationManager.SendNotification(
-                            "<color=grey>[</color><color=green>ENABLE</color><color=grey>]</color> " +
-                            target.toolTip);
+                    target.enabled = !target.enabled;
 
-                    if (target.enableMethod != null)
+                    if (target.enabled)
                     {
-                        try
+                        NotificationManager.SendNotification(
+                                "<color=grey>[</color><color=green>ENABLE</color><color=grey>]</color> " +
+                                target.toolTip);
+
+                        if (target.enableMethod != null)
                         {
-                            target.enableMethod.Invoke();
-                        }
-                        catch (Exception exc)
-                        {
-                            Debug.LogError($"{PluginInfo.Name} // Error enabling {target.buttonText}: {exc}");
+                            try
+                            {
+                                target.enableMethod.Invoke();
+                            }
+                            catch (Exception exc)
+                            {
+                                Debug.LogError($"{PluginInfo.Name} // Error enabling {target.buttonText}: {exc}");
+                            }
                         }
                     }
-                }
-                else
-                {
-                    NotificationManager.SendNotification(
-                            "<color=grey>[</color><color=red>DISABLE</color><color=grey>]</color> " +
-                            target.toolTip);
-
-                    if (target.disableMethod != null)
+                    else
                     {
-                        try
+                        NotificationManager.SendNotification(
+                                "<color=grey>[</color><color=red>DISABLE</color><color=grey>]</color> " +
+                                target.toolTip);
+
+                        if (target.disableMethod != null)
                         {
-                            target.disableMethod.Invoke();
-                        }
-                        catch (Exception exc)
-                        {
-                            Debug.LogError($"{PluginInfo.Name} // Error disabling {target.buttonText}: {exc}");
+                            try
+                            {
+                                target.disableMethod.Invoke();
+                            }
+                            catch (Exception exc)
+                            {
+                                Debug.LogError($"{PluginInfo.Name} // Error disabling {target.buttonText}: {exc}");
+                            }
                         }
                     }
-                }
 
-                break;
-            }
+                    break;
+                }
 
             case ButtonMode.Action:
-            {
-                if (target.method != null)
                 {
-                    try
+                    if (target.method != null)
                     {
-                        target.method.Invoke();
+                        try
+                        {
+                            target.method.Invoke();
+                        }
+                        catch (Exception exc)
+                        {
+                            Debug.LogError($"{PluginInfo.Name} // Error invoking {target.buttonText}: {exc}");
+                        }
                     }
-                    catch (Exception exc)
-                    {
-                        Debug.LogError($"{PluginInfo.Name} // Error invoking {target.buttonText}: {exc}");
-                    }
-                }
 
-                break;
-            }
+                    break;
+                }
 
             case ButtonMode.Incremental:
-            {
-                bool positive = incrementDirection ?? true;
-
-                if (target.incrementMethod != null)
                 {
-                    try
-                    {
-                        target.incrementMethod.Invoke(positive);
-                    }
-                    catch (Exception exc)
-                    {
-                        Debug.LogError($"{PluginInfo.Name} // Error changing {target.buttonText}: {exc}");
-                    }
-                }
+                    bool positive = incrementDirection ?? true;
 
-                break;
-            }
+                    if (target.incrementMethod != null)
+                    {
+                        try
+                        {
+                            target.incrementMethod.Invoke(positive);
+                        }
+                        catch (Exception exc)
+                        {
+                            Debug.LogError($"{PluginInfo.Name} // Error changing {target.buttonText}: {exc}");
+                        }
+                    }
+
+                    break;
+                }
         }
 
         Preferences.Save();
@@ -2227,7 +2210,7 @@ public class Main : MonoBehaviour
         searchUsingDesktopKeyboard =
                 UnityInput.Current.GetKey(keyboardButton) ||
                 menu != null &&
-                TPC  != null &&
+                TPC != null &&
                 menu.transform.parent ==
                 TPC.transform;
 
@@ -2253,7 +2236,7 @@ public class Main : MonoBehaviour
         searchResults =
                 Array.Empty<ButtonInfo>();
 
-        if (menu       != null &&
+        if (menu != null &&
             searchRoot != null &&
             menu.transform.parent ==
             searchRoot.transform)
@@ -2435,65 +2418,65 @@ public class Main : MonoBehaviour
 
         foreach (Key keyCode in from key in keyboard.allKeys where key is { wasPressedThisFrame: true, } select key.keyCode)
         {
-                switch (keyCode)
-                {
-                        case Key.Backspace:
-                        {
-                                HandleSearchKey("BACK");
-
-                                return;
-                        }
-
-                        case Key.Space:
-                        {
-                                HandleSearchKey("SPACE");
-
-                                return;
-                        }
-
-                        case Key.Delete:
-                        {
-                                HandleSearchKey("CLEAR");
-
-                                return;
-                        }
-
-                        case Key.Escape:
-                        {
-                                HandleSearchKey("CLOSE");
-
-                                return;
-                        }
-                }
-
-                if (keyCode >= Key.A &&
-                    keyCode <= Key.Z)
-                {
-                        HandleSearchKey(
-                                        keyCode.ToString());
+            switch (keyCode)
+            {
+                case Key.Backspace:
+                    {
+                        HandleSearchKey("BACK");
 
                         return;
-                }
+                    }
 
-                if (keyCode >= Key.Digit1 &&
-                    keyCode <= Key.Digit9)
-                {
-                        string keyName =
-                                        keyCode.ToString();
-
-                        HandleSearchKey(
-                                        keyName.Substring(
-                                                        keyName.Length - 1));
+                case Key.Space:
+                    {
+                        HandleSearchKey("SPACE");
 
                         return;
-                }
+                    }
 
-                if (keyCode == Key.Digit0)
-                {
-                        HandleSearchKey("0");
+                case Key.Delete:
+                    {
+                        HandleSearchKey("CLEAR");
 
                         return;
-                }
+                    }
+
+                case Key.Escape:
+                    {
+                        HandleSearchKey("CLOSE");
+
+                        return;
+                    }
+            }
+
+            if (keyCode >= Key.A &&
+                keyCode <= Key.Z)
+            {
+                HandleSearchKey(
+                                keyCode.ToString());
+
+                return;
+            }
+
+            if (keyCode >= Key.Digit1 &&
+                keyCode <= Key.Digit9)
+            {
+                string keyName =
+                                keyCode.ToString();
+
+                HandleSearchKey(
+                                keyName.Substring(
+                                                keyName.Length - 1));
+
+                return;
+            }
+
+            if (keyCode == Key.Digit0)
+            {
+                HandleSearchKey("0");
+
+                return;
+            }
         }
     }
 
@@ -2550,42 +2533,42 @@ public class Main : MonoBehaviour
         switch (value)
         {
             case "BACK":
-            {
-                if (searchQuery.Length > 0)
-                    searchQuery = searchQuery.Substring(0, searchQuery.Length - 1);
+                {
+                    if (searchQuery.Length > 0)
+                        searchQuery = searchQuery.Substring(0, searchQuery.Length - 1);
 
-                break;
-            }
+                    break;
+                }
 
             case "SPACE":
-            {
-                if (searchQuery.Length < 32)
-                    searchQuery += " ";
+                {
+                    if (searchQuery.Length < 32)
+                        searchQuery += " ";
 
-                break;
-            }
+                    break;
+                }
 
             case "CLEAR":
-            {
-                searchQuery = string.Empty;
+                {
+                    searchQuery = string.Empty;
 
-                break;
-            }
+                    break;
+                }
 
             case "CLOSE":
-            {
-                CloseSearch(true);
+                {
+                    CloseSearch(true);
 
-                return;
-            }
+                    return;
+                }
 
             default:
-            {
-                if (searchQuery.Length < 32)
-                    searchQuery += value;
+                {
+                    if (searchQuery.Length < 32)
+                        searchQuery += value;
 
-                break;
-            }
+                    break;
+                }
         }
 
         pageNumber = 0;
@@ -2595,19 +2578,19 @@ public class Main : MonoBehaviour
     }
 
     public static Vector3 RandomVector3(float range = 1f) =>
-            new(Random.Range(-range,     range),
+            new(Random.Range(-range, range),
                     Random.Range(-range, range),
                     Random.Range(-range, range));
 
     public static Quaternion RandomQuaternion(float range = 360f) =>
             Quaternion.Euler(Random.Range(0f, range),
-                    Random.Range(0f,          range),
-                    Random.Range(0f,          range));
+                    Random.Range(0f, range),
+                    Random.Range(0f, range));
 
     public static Color RandomColor(byte range = 255, byte alpha = 255) =>
             new Color32((byte)Random.Range(0, range),
-                    (byte)Random.Range(0,     range),
-                    (byte)Random.Range(0,     range),
+                    (byte)Random.Range(0, range),
+                    (byte)Random.Range(0, range),
                     alpha);
 
     public static (Vector3 position, Quaternion rotation, Vector3 up, Vector3 forward, Vector3 right) TrueLeftHand()
@@ -2849,7 +2832,6 @@ public class Main : MonoBehaviour
         return hit.collider != null;
     }
 
-
     private static void RenderGunLine(
         Vector3 startPosition,
         Vector3 endPosition,
@@ -3070,7 +3052,7 @@ public class Main : MonoBehaviour
             ? rightTrigger > 0.5f || Mouse.current.leftButton.isPressed
             : rightGrab || Mouse.current.rightButton.isPressed;
     }
-    
+
     public static string ModInfoNotif(string name)
     {
         return ($"<color=grey>[</color><color=purple>{name}</color><color=grey>]</color>");
@@ -3125,12 +3107,9 @@ public class Main : MonoBehaviour
         GorillaTagger.Instance.offlineVRRig.SetQuestScore(score);
     }
 
-    //string body = "Player Objects/Local VRRig/Local Gorilla Player/RigAnchor/rig/body/";
-    //string head = "Player Objects/Local VRRig/Local Gorilla Player/RigAnchor/rig/head/";
-
     public static void GetFreeCosmetic(string id)
     {
-        // no workie anymore :-(
+
     }
     public static int NoInvisLayerMask()
     {
@@ -3180,7 +3159,7 @@ public class Main : MonoBehaviour
 
     public static Vector3 lastPosition = Vector3.zero;
 
-    public static void TeleportPlayer(Vector3 pos, bool keepVelocity = false) // Prevents your hands from getting stuck on trees
+    public static void TeleportPlayer(Vector3 pos, bool keepVelocity = false)
     {
         GTPlayer.Instance.TeleportTo(World2Player(pos), GTPlayer.Instance.transform.rotation, keepVelocity);
         VRRig.LocalRig.transform.position = pos;
@@ -3327,11 +3306,11 @@ public class Main : MonoBehaviour
         return (T[])typePool[type];
     }
 
-    public static void Ban() // you feel the skidding within you
+    public static void Ban()
     {
         for (int i = 0; i > 2; i++)
         {
-            // i hid the redirect code
+
             GorillaServer.Instance.CheckForBadName(new CheckForBadNameRequest
             {
                 name = GorillaComputer.instance.anywhereTwoWeek[Random.Range(0, GorillaComputer.instance.anywhereTwoWeek.Length)],
@@ -3345,4 +3324,10 @@ public class Main : MonoBehaviour
     {
         return;
     }
+
+    public static void CopyText(string text)
+    {
+        GUIUtility.systemCopyBuffer = text;
+    }
+
 }

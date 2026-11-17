@@ -20,8 +20,8 @@ namespace externallol.Menu
     {
         public static ButtonInfo[] MainMods =
         [
-            new() { buttonText = "Settings", method = () => SetCategory("Settings"), mode = ButtonMode.Action, isCategory = true, toolTip = "Opens the settings." },
             new() { buttonText = "Join Discord", method = () => Process.Start("https://discord.gg/bmk4VzvcZc"), mode = ButtonMode.Action, toolTip = "Joins the menu's Discord server." },
+            new() { buttonText = "Settings", method = () => SetCategory("Settings"), mode = ButtonMode.Action, isCategory = true, toolTip = "Opens the settings." },
             new() { buttonText = "Room Mods", method = () => SetCategory("Room Mods"), mode = ButtonMode.Action, isCategory = true, toolTip = "Opens the room mods category." },
             new() { buttonText = "Movement Mods", method = () => SetCategory("Movement Mods"), mode = ButtonMode.Action, isCategory = true, toolTip = "Opens the movement mods category." },
             new() { buttonText = "Enabled Mods", method = () => { UpdateEnabledMods(); SetCategory("Enabled Mods"); }, mode = ButtonMode.Action, isCategory = true, toolTip = "Shows currently enabled mods." },
@@ -231,27 +231,27 @@ namespace externallol.Menu
                 new() { buttonText = "Auto T-Pose <color=grey>[</color><color=green>A</color><color=grey>]</color>", method = Player.AutoTPose, mode = ButtonMode.Toggle, toolTip = "Automatically positions your rig in a T-pose." },
                 new() { buttonText = "Minecraft Animations", method = Player.MinecraftAnimations, mode = ButtonMode.Toggle, toolTip = "Makes you move with Minecraft-style animations." },
                 new() { buttonText = "Fan <color=grey>[</color><color=green>A</color><color=grey>]</color>", method = Player.Fan, mode = ButtonMode.Toggle, toolTip = "Animates your rig like a fan." },
-                new() { buttonText = "Helicopter", method = Player.Helicopter, mode = ButtonMode.Toggle, toolTip = "Animates your rig like a helicopter" },
+                new() { buttonText = "Helicopter", method = Player.Helicopter, mode = ButtonMode.Toggle, toolTip = "Animates your rig like a helicopter." },
         ];
 
 
         public static ButtonInfo[] AdvantageMods =
         [
                 new() { buttonText = "Exit Advantage Mods", method = () => SetCategory("Main"), mode = ButtonMode.Action, toolTip = "Returns to the main menu page." },
-
                 new() { buttonText = "Tag Gun", method = Advantages.TagGun, mode = ButtonMode.Toggle, toolTip = "Tags whoever your hand desires."},
                 new() { buttonText = "Tag All <color=grey>[</color><color=green>MD</color><color=grey>]</color>", method = Advantages.TagAll, mode = ButtonMode.Toggle, toolTip = "Tags everyone in the room." },
                 new() { buttonText = "Untag All <color=grey>[</color><color=green>M</color><color=grey>]</color>", method = Advantages.UntagAll, mode = ButtonMode.Action, toolTip = "Removes the tagged state from everyone." },
                 new() { buttonText = "Untag Gun <color=grey>[</color><color=green>M</color><color=grey>]</color>", method = Advantages.UntagGun, mode = ButtonMode.Toggle, toolTip = "Removes the tagged state from the player you target with the gun." },
                 new() { buttonText = "Disable Tags <color=grey>[</color><color=green>M</color><color=grey>]</color>", method = Advantages.DisableTags, mode = ButtonMode.Toggle, disableMethod = Notifications.NotificationManager.ClearAllNotifications, toolTip = "Continuously removes the tagged state from everyone." },
                 //new() { buttonText = "Flick Tag Gun <color=grey>[</color><color=green>BK</color><color=grey>]</color>", method = Advantages.FlickTagGun, mode = ButtonMode.Toggle, toolTip = "Simulates a flick tag." },
-            ];
+         ];
 
         public static ButtonInfo[] ImportantMods =
         [
             new() { buttonText = "Exit Important Mods", method = () => SetCategory("Main"), mode = ButtonMode.Action, toolTip = "Returns to the main menu page." },
-                new() { buttonText = "Crash", method = Application.Quit, mode = ButtonMode.Action, toolTip = "Closes the game." },
-            ];
+            new() { buttonText = "Crash", method = Application.Quit, mode = ButtonMode.Action, toolTip = "Closes the game." },
+            new() { buttonText = "Panic", method = Panic, mode = ButtonMode.Action, toolTip = "Turns off all mods." },
+        ];
 
         public static ButtonInfo[] VIMMods =
         [
@@ -512,6 +512,17 @@ namespace externallol.Menu
             }
 
             return result;
+        }
+
+        public static void Panic()
+        {
+            foreach (ButtonInfo button in AllButtons)
+            {
+                if (button.mode == ButtonMode.Toggle && button.enabled)
+                {
+                    button.SetEnabled(false);
+                }
+            }
         }
     }
 }

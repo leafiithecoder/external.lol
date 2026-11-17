@@ -1,14 +1,16 @@
-﻿using GorillaLocomotion;
+﻿using externallol.Extensions;
+using externallol.Notifications;
+using GorillaLocomotion;
 using GorillaLocomotion.Swimming;
 using Photon.Pun;
 using Photon.Realtime;
-using externallol.Extensions;
-using externallol.Notifications;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using UnityEngine;
 using static externallol.Menu.Main;
+using static externallol.Utilities.RigUtilities;
 
 namespace externallol.Mods
 {
@@ -311,6 +313,92 @@ namespace externallol.Mods
                 else
                     VRRig.LocalRig.PlayHandTapLocal(soundId, false, 999999f);
             }
+        }
+
+        private static float creationDateDelay;
+        public static void CopyCreationDateSelf()
+        {
+            string date = GetCreationDate(PhotonNetwork.LocalPlayer.UserId, CopyCreationDate);
+            if (date != "Loading...")
+                CopyCreationDate(date);
+        }
+
+        public static void CopyCreationDateGun()
+        {
+            if (GetGunInput(false))
+            {
+                var GunData = RenderGun();
+                RaycastHit Ray = GunData.Ray;
+
+                if (GetGunInput(true))
+                {
+                    VRRig gunTarget = Ray.collider.GetComponentInParent<VRRig>();
+                    if (gunTarget && !gunTarget.IsLocal() && Time.time > creationDateDelay)
+                    {
+                        creationDateDelay = Time.time + 0.5f;
+
+                        string date = GetCreationDate(GetPlayerFromVRRig(gunTarget).UserId, CopyCreationDate);
+                        if (date != "Loading...")
+                            CopyCreationDate(date);
+                    }
+                }
+            }
+        }
+
+        public static void CopyCreationDateAura()
+        {
+            if (!NetworkSystem.Instance.InRoom) return;
+            List<VRRig> nearbyPlayers = new List<VRRig>();
+
+            foreach (VRRig vrrig in VRRigExtensions.ActiveRigs)
+            {
+                if (Vector3.Distance(vrrig.transform.position, VRRig.LocalRig.transform.position) < 4 && !vrrig.IsLocal())
+                    nearbyPlayers.Add(vrrig);
+                else if (nearbyPlayers.Contains(vrrig))
+                    nearbyPlayers.Remove(vrrig);
+            }
+
+            if (nearbyPlayers.Count <= 0) return;
+            foreach (var date in nearbyPlayers.Select(nearbyPlayer => GetCreationDate(GetPlayerFromVRRig(nearbyPlayer).UserId, CopyCreationDate)).Where(date => date != "Loading..."))
+                CopyCreationDate(date);
+        }
+
+        public static void CopyCreationDateOnTouch()
+        {
+            if (!NetworkSystem.Instance.InRoom) return;
+
+            List<VRRig> touchedPlayers = new List<VRRig>();
+
+            foreach (VRRig rig in VRRigExtensions.ActiveRigs)
+            {
+                if (!rig.IsLocal())
+                {
+                    if (rig.IsBeingTouched())
+                    {
+                        touchedPlayers.Add(rig);
+                    }
+                }
+            }
+
+            if (touchedPlayers.Count > 0)
+            {
+                foreach (var date in touchedPlayers.Select(rig => GetCreationDate(rig.GetPlayer().UserId, CopyCreationDate)).Where(date => date != "Loading..."))
+                    CopyCreationDate(date);
+            }
+        }
+
+        public static void CopyCreationDateAll()
+        {
+            foreach (var date in VRRigExtensions.ActiveRigs.Select(vrrig => GetCreationDate(GetPlayerFromVRRig(vrrig).UserId, CopyCreationDate)).Where(date => date != "Loading..."))
+            {
+                CopyCreationDate(date);
+            }
+        }
+
+        public static void CopyCreationDate(string date)
+        {
+            NotificationManager.SendNotification("<color=grey>[</color><color=green>SUCCESS</color><color=grey>]</color> " + date);
+            GUIUtility.systemCopyBuffer = date;
         }
     }
 }

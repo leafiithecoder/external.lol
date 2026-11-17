@@ -29,6 +29,10 @@ public class Plugin : BaseUnityPlugin
     {
         PatchHandler.PatchAll();
 
+        if (GetComponent<externallol.Menu.Main>() == null)
+            gameObject.AddComponent<externallol.Menu.Main>();
+
         Preferences.ApplyButtonStates();
     }
+
 }

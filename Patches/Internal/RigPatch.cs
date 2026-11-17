@@ -2,17 +2,30 @@
 
 namespace externallol.Patches.Internal
 {
-    [HarmonyPatch(typeof(VRRig), nameof(VRRig.OnDisable))]
-    public class RigDisablePatch
-    {
-        public static bool Prefix(VRRig __instance) =>
-            __instance != VRRig.LocalRig;
-    }
-
-    [HarmonyPatch(typeof(VRRig), nameof(VRRig.PostTick))]
-    public class RigPostTickPatch
-    {
-        public static bool Prefix(VRRig __instance) =>
-            !__instance.isLocal || __instance.enabled;
-    }
+	public class RigPatches
+	{
+		public class OnDisable
+		{
+			public static bool Prefix(VRRig __instance)
+			{
+				return __instance != null && !__instance.isLocal;
+			}
+		}
+		public class Awake
+		{
+			public static bool Prefix(VRRig __instance)
+			{
+				return __instance?.gameObject != null &&
+					   __instance.gameObject.name != "Local Gorilla Player(Clone)";
+			}
+		}
+		public class PostTick
+		{
+			public static bool Prefix(VRRig __instance)
+			{
+				return __instance != null &&
+					   (!__instance.isLocal || __instance.enabled);
+			}
+		}
+	}
 }

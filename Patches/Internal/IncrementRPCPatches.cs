@@ -5,7 +5,6 @@ namespace externallol.Patches.Internal
 {
     public abstract class IncrementRPCPatches
     {
-        [HarmonyPatch(typeof(VRRig), "IncrementRPC", typeof(PhotonMessageInfoWrapped), typeof(string))]
         public class NoIncrementRPC
         {
             private static bool Prefix(PhotonMessageInfoWrapped info, string sourceCall) =>

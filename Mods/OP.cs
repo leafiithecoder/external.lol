@@ -1,29 +1,51 @@
 ﻿using ExitGames.Client.Photon;
-using GorillaExtensions;
-using GorillaLocomotion.Gameplay;
-using GorillaNetworking;
-using Photon.Pun;
-using Photon.Realtime;
 using externallol.Extensions;
 using externallol.Managers;
 using externallol.Menu;
 using externallol.Notifications;
 using externallol.Patches.Internal;
 using externallol.Utilities;
+using GorillaExtensions;
+using GorillaLocomotion;
+using GorillaLocomotion.Gameplay;
+using GorillaNetworking;
+using GorillaTagScripts;
+using Photon.Pun;
+using Photon.Realtime;
+using Photon.Voice;
+using Photon.Voice.PUN;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using static externallol.Menu.Main;
 using Random = UnityEngine.Random;
-using System;
-using GorillaTagScripts;
 
 namespace externallol.Mods
 {
     public class OP
     {// alot of credits to some other menus most of these methods aren't mine
         #region Misc
+
+        public static void GiveFlyOnGrab()
+        {
+            foreach (VRRig rig in VRRigExtensions.ActiveRigs)
+            {
+                if (!rig.isLocal)
+                {
+                    if (rig.leftHandLink.grabbedPlayer == NetworkSystem.Instance.LocalPlayer || rig.rightHandLink.grabbedPlayer == NetworkSystem.Instance.LocalPlayer)
+                    {
+                        bool grabbedOnLeft = VRRig.LocalRig.leftHandLink.grabbedPlayer == rig.GetPlayer();
+                        if (grabbedOnLeft ? rig.leftIndex.calcT > 0 : rig.rightIndex.calcT > 0)
+                        {
+                            GTPlayer.Instance.transform.position += rig.headMesh.transform.forward * (Time.deltaTime * Settings.Movement.flySpeed);
+                            GorillaTagger.Instance.rigidbody.linearVelocity = Vector3.zero;
+                        }
+                    }
+                }
+            }
+        }
 
         private static float reportDelay;
         public static void DelayBanGun()
@@ -32,6 +54,7 @@ namespace externallol.Mods
             {
                 var GunData = RenderGun();
                 RaycastHit Ray = GunData.Ray;
+                
                 
 
                 if (GetGunInput(true))
@@ -606,6 +629,99 @@ namespace externallol.Mods
                 if (gunLocked)
                     gunLocked = false;
             }
+        }
+
+        public static void MuteTarget(object target)
+        {
+            RaiseEventOptions raiseOptions = new RaiseEventOptions();
+
+            if (target is ReceiverGroup group)
+                raiseOptions.Receivers = group;
+            else if (target is int[] actors)
+                raiseOptions.TargetActors = actors;
+            else if (target is RaiseEventOptions options)
+                raiseOptions = options;
+            else
+                return;
+
+            SendOptions sendOptions = new SendOptions
+            {
+                Reliability = false,
+                Channel = 0
+            };
+
+
+            Dictionary<byte, object> voiceData = new Dictionary<byte, object>
+            {
+                { 1, 255 },
+                { 2, VoiceManager.Get().SamplingRate },
+                { 3, 2 },
+                { 4, 20000 },
+                { 5, 30000 },
+                { 10, null },
+                { 11, (byte)0 },
+                { 12, Codec.AudioOpus }
+            };
+
+            object[] eventData =
+            {
+                (byte)0,
+                (byte)1,
+                new object[] { voiceData }
+            };
+
+            PhotonVoiceNetwork.Instance.Client.OpRaiseEvent(
+                202,
+                eventData,
+                raiseOptions,
+                sendOptions
+            );
+        }
+
+        public static void ServerMuteAll()
+        {
+            for (int i = 0; i < 2; i++)
+                MuteTarget(ReceiverGroup.All);
+        }
+
+        public static void DeafenGun()
+        {
+            if (GetGunInput(false))
+            {
+                var GunData = RenderGun();
+                RaycastHit Ray = GunData.Ray;
+
+                if (gunLocked && lockTarget != null)
+                {
+                    for (int i = 0; i < 2; i++)
+                        MuteTarget(new int[] { lockTarget.GetPlayer().ActorNumber });
+                }
+
+
+                if (GetGunInput(true))
+                {
+                    VRRig gunTarget = Ray.collider.GetComponentInParent<VRRig>();
+                    if (gunTarget && !gunTarget.IsLocal())
+                    {
+                        gunLocked = true;
+                        lockTarget = gunTarget;
+                    }
+                }
+            }
+            else
+            {
+                if (gunLocked)
+                {
+                    gunLocked = false;
+                    VRRig.LocalRig.enabled = true;
+                }
+            }
+        }
+
+        public static void DeafenAll()
+        {
+            for (int i = 0; i < 2; i++)
+                MuteTarget(ReceiverGroup.Others);
         }
 
         #endregion

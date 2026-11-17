@@ -1,7 +1,8 @@
 ﻿using ExitGames.Client.Photon;
+using externallol.Managers;
+using externallol.Menu;
 using Photon.Pun;
 using Photon.Realtime;
-using externallol.Managers;
 using System.Linq;
 using System.Threading;
 using UnityEngine;
@@ -13,7 +14,7 @@ namespace externallol.Classes.Network
     {
         private const byte EventCode = 199;
         private static bool initialized;
-        public static bool ExternalEnabled = true;
+        public static bool ExternalEnabled = Buttons.GetIndex("External Enabled")?.enabled ?? false;
 
         public static void Initialize()
         {

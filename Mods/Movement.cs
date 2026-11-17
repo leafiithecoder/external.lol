@@ -778,4 +778,14 @@ public abstract class Movement
         ProcessPullHand(false);
         ProcessPullHand(true);
     }
+
+    public static void GroundHelper()
+    {
+        if (rightGrab)
+        {
+            Vector3 x3 = GorillaTagger.Instance.rigidbody.linearVelocity;
+            if (x3.y > 0f)
+                GorillaTagger.Instance.rigidbody.linearVelocity = new Vector3(x3.x, 0f, x3.z);
+        }
+    }
 }
